@@ -2,7 +2,7 @@ import { useState } from "react"
 import { ArrowUpRight } from "lucide-react"
 import { labPages, type PageNode } from "@/data/pages"
 import { Bloom } from "@/components/lab/color-swatch"
-import { LabCredits } from "@/components/lab-credits"
+import { SeattleSignature } from "@/components/seattle-signature"
 import { circlePaths, linePaths, roughPathInfos, roundedPolygonPath, ROUGH_OPTIONS } from "@/components/lab/rough"
 import { FadeInUp } from "@/components/ui/fade-in-up"
 import { RoughBox, RoughLine } from "@/components/ui/rough-ink"
@@ -135,7 +135,7 @@ export function LabHome({ index }: { index: number; props?: Record<string, unkno
       </FadeInUp>
       <FadeInUp i={index + 2}>
         <footer className="mx-auto mt-12 max-w-xl text-center">
-          <LabCredits />
+          <SeattleSignature />
           <a
             href="https://github.com/nagbharat92/sketch-lab"
             target="_blank"

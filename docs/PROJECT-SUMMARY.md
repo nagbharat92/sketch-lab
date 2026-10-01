@@ -12,7 +12,7 @@ A collection of interactive experiments in hand-drawn interfaces, by Bharat Nag.
 - Explore: available on lab pages and Blank, with flat lab navigation followed by Utilities.
 - Labs: Strokes, Type, Colour, Motion, Bloom, Controls, Wobble and Seattle.
 - Blank: an empty canvas for zoomed-in recordings of the Explore button and tooltip.
-- Credits: Home retains the note about experiments with AI. The drawer uses a compact Seattle signature: animated Needle and drizzle, static skyline, a red heart credit and stacked X/GitHub profile links, followed by source and theme controls. It animates only while the drawer is open.
+- Credits: Home and the Seattle lab share the Seattle signature: animated Needle and drizzle, static skyline, a red heart credit and inline X/GitHub profile links. The drawer uses a compact version with stacked profile links, followed by source and theme controls; it animates only while the drawer is open.
 - Identity: Sketch Lab browser title, description and a sketchy Bloom favicon.
 
 The personal biography, social-links row, email-copy interaction and Browser Notifications case study have been removed. Historical portfolio documents are under `docs/archive/`.
