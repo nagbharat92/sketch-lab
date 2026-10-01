@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react"
 import { Moon, Sun } from "lucide-react"
 import { FadeInUp } from "@/components/ui/fade-in-up"
 import { RoughSlider } from "@/components/lab/rough-slider"
+import { RoughChunkySlider } from "@/components/lab/rough-chunky-slider"
 import { RoughCheckbox } from "@/components/lab/rough-checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
@@ -88,6 +89,12 @@ export function ControlsLab({ index }: ControlsLabProps) {
   const [enabled, setEnabled] = useState(true)
   const [loop, setLoop] = useState(false)
   const [colorIndex, setColorIndex] = useState(2)
+  const [bright, setBright] = useState(75)
+  const [level, setLevel] = useState(3)
+  const [chunkyHue, setChunkyHue] = useState(210)
+  const [hueStep, setHueStep] = useState(180)
+  const [thick, setThick] = useState(60)
+  const [thickHue, setThickHue] = useState(200)
 
   // Rendered once per panel (fresh instances → unique clip/gradient ids), all
   // bound to the shared state above so both themes move together.
@@ -105,6 +112,49 @@ export function ControlsLab({ index }: ControlsLabProps) {
           seed={12}
           gradient={HUE_STOPS}
           thumbColor={hueColor(hue)}
+        />
+      </Section>
+
+      <Section title="Chunky sliders">
+        <RoughChunkySlider label="Brightness" value={bright} min={0} max={100} onChange={setBright} format={pct} seed={301} />
+        <RoughChunkySlider label="Level" value={level} min={0} max={6} onChange={setLevel} seed={302} stepper />
+        <RoughChunkySlider
+          label="Spectrum"
+          value={chunkyHue}
+          min={0}
+          max={360}
+          onChange={setChunkyHue}
+          format={deg}
+          seed={303}
+          gradient={HUE_STOPS}
+        />
+        <RoughChunkySlider
+          label="Spectrum steps"
+          value={hueStep}
+          min={0}
+          max={360}
+          step={60}
+          onChange={setHueStep}
+          format={deg}
+          seed={304}
+          gradient={HUE_STOPS}
+          stepper
+        />
+      </Section>
+
+      <Section title="Thick rail">
+        <RoughSlider label="Plain" value={thick} min={0} max={100} onChange={setThick} format={pct} seed={13} railWidth={20} />
+        <RoughSlider
+          label="Spectrum"
+          value={thickHue}
+          min={0}
+          max={360}
+          onChange={setThickHue}
+          format={deg}
+          seed={14}
+          gradient={HUE_STOPS}
+          thumbColor={hueColor(thickHue)}
+          railWidth={20}
         />
       </Section>
 

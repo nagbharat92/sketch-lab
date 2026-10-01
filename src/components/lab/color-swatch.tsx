@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from "react"
-import { ROUGH_OPTIONS, rectPath, roughPathInfos } from "@/components/lab/rough"
+import { useId, useMemo, useRef, useState } from "react"
+import { ROUGH_OPTIONS, STROKE_WIDTH, circlePaths, roughPathInfos, roundedPolygonPath } from "@/components/lab/rough"
 import {
   BLOOM_PRESETS,
   DEFAULT_BLOOM,
@@ -36,14 +36,18 @@ interface BloomProps {
   fill: string
   seed: number
   strokeWidth?: number
-  centerDot?: boolean
+  centerHole?: boolean
+  /** Punched-out centre-hole radius as a fraction of the bloom radius (default 0.3). */
+  centerHoleRatio?: number
   /** Rotate endlessly — the selection signal. */
   spin?: boolean
   className?: string
 }
 
 /** A hand-drawn (roughjs) flower, filled with `fill`, stroked in the theme ink. */
-export function Bloom({ size, radius, shape, fill, seed, strokeWidth = 1.4, centerDot = false, spin = false, className }: BloomProps) {
+export function Bloom({ size, radius, shape, fill, seed, strokeWidth = 1.4, centerHole = false, centerHoleRatio = 0.3, spin = false, className }: BloomProps) {
+  const holeId = useId().replace(/:/g, "")
+  const hole = centerHole && centerHoleRatio > 0
   const paths = useMemo(
     () =>
       roughPathInfos(bloomPath(size / 2, size / 2, radius, shape), {
@@ -56,6 +60,12 @@ export function Bloom({ size, radius, shape, fill, seed, strokeWidth = 1.4, cent
       }),
     [size, radius, shape, fill, seed, strokeWidth],
   )
+  // A hand-drawn circle tracing the hole edge, so the hole reads as part of the
+  // original inked shape (not just a cut-out).
+  const holePaths = useMemo(
+    () => (centerHole && centerHoleRatio > 0 ? circlePaths(size / 2, size / 2, radius * centerHoleRatio * 2, seed) : []),
+    [centerHole, centerHoleRatio, size, radius, seed],
+  )
   return (
     <svg
       aria-hidden="true"
@@ -64,17 +74,33 @@ export function Bloom({ size, radius, shape, fill, seed, strokeWidth = 1.4, cent
       viewBox={`0 0 ${size} ${size}`}
       className={cn("block overflow-visible text-foreground", spin && "animate-bloom-spin", className)}
     >
-      <g strokeLinecap="round" strokeLinejoin="round">
+      {hole ? (
+        <mask id={holeId} maskUnits="userSpaceOnUse">
+          <rect x={0} y={0} width={size} height={size} fill="white" />
+          <circle cx={size / 2} cy={size / 2} r={radius * centerHoleRatio} fill="black" />
+        </mask>
+      ) : null}
+      <g strokeLinecap="round" strokeLinejoin="round" mask={hole ? `url(#${holeId})` : undefined}>
         {paths.map((p, i) => (
           <path key={i} d={p.d} stroke={p.stroke} fill={p.fill ?? "none"} strokeWidth={p.strokeWidth} />
         ))}
-        {centerDot ? <circle cx={size / 2} cy={size / 2} r={radius * 0.15} fill="currentColor" opacity={0.14} /> : null}
       </g>
+      {hole ? (
+        <g strokeLinecap="round" strokeLinejoin="round">
+          {holePaths.map((d, i) => (
+            <path key={i} d={d} stroke="currentColor" fill="none" strokeWidth={strokeWidth} />
+          ))}
+        </g>
+      ) : null}
     </svg>
   )
 }
 
 // ── Single swatch ─────────────────────────────────────────────────────────────
+
+/** Corner rounding of an unselected swatch tile, as a fraction of the tile's
+ *  drawn side. One place to tune how round every swatch square reads. */
+const SWATCH_CORNER_RATIO = 0.22
 
 interface ColorSwatchProps {
   /** Fill colour; omit for the theme-ink "default" swatch (outline only). */
@@ -87,6 +113,8 @@ interface ColorSwatchProps {
   onClick: () => void
   /** Tile size in px (default 34). */
   size?: number
+  /** Punched-out centre-hole radius as a fraction of the bloom radius (default 0.3). */
+  centerHoleRatio?: number
 }
 
 /**
@@ -95,10 +123,15 @@ interface ColorSwatchProps {
  * omitted). Most callers should use <ColorPicker>; reach for this atom only to
  * drive the bloom `shape` externally.
  */
-export function ColorSwatch({ color, name, selected, shape, onClick, size = 34 }: ColorSwatchProps) {
+export function ColorSwatch({ color, name, selected, shape, onClick, size = 34, centerHoleRatio = 0.3 }: ColorSwatchProps) {
   const seed = bloomSeed(name)
+  const holeId = useId().replace(/:/g, "")
   const inset = Math.max(2, Math.round(size * 0.09))
   const fill = color ?? "none"
+  // The bloom radius used below; its punched-out centre hole scales with it. Kept
+  // out of the memo (which inlines size * 0.44) so the memoization stays compiler-clean.
+  const bloomRadius = size * 0.44
+  const hole = selected && centerHoleRatio > 0
   const paths = useMemo(
     () =>
       selected
@@ -109,16 +142,36 @@ export function ColorSwatch({ color, name, selected, shape, onClick, size = 34 }
             ...ROUGH_OPTIONS,
             seed,
           })
-        : roughPathInfos(rectPath(inset, inset, size - inset * 2, size - inset * 2), {
-            fill,
-            fillStyle: "solid",
-            stroke: "currentColor",
-            ...ROUGH_OPTIONS,
-            seed,
-          }),
+        : roughPathInfos(
+            (() => {
+              const side = size - inset * 2
+              const radius = Math.round(side * SWATCH_CORNER_RATIO)
+              return roundedPolygonPath(
+                [
+                  { x: inset, y: inset },
+                  { x: inset + side, y: inset },
+                  { x: inset + side, y: inset + side },
+                  { x: inset, y: inset + side },
+                ],
+                radius,
+              )
+            })(),
+            {
+              fill,
+              fillStyle: "solid",
+              stroke: "currentColor",
+              ...ROUGH_OPTIONS,
+              seed,
+            },
+          ),
     [selected, shape, fill, seed, size, inset],
   )
-
+  // A hand-drawn circle tracing the hole edge, so the hole reads as part of the
+  // original inked shape (not just a cut-out).
+  const holePaths = useMemo(
+    () => (selected && centerHoleRatio > 0 ? circlePaths(size / 2, size / 2, size * 0.44 * centerHoleRatio * 2, seed) : []),
+    [selected, centerHoleRatio, size, seed],
+  )
   return (
     <button
       type="button"
@@ -139,11 +192,24 @@ export function ColorSwatch({ color, name, selected, shape, onClick, size = 34 }
         viewBox={`0 0 ${size} ${size}`}
         className={cn("block overflow-visible text-foreground", selected && "animate-bloom-spin")}
       >
-        <g strokeLinecap="round" strokeLinejoin="round">
+        {hole ? (
+          <mask id={holeId} maskUnits="userSpaceOnUse">
+            <rect x={0} y={0} width={size} height={size} fill="white" />
+            <circle cx={size / 2} cy={size / 2} r={bloomRadius * centerHoleRatio} fill="black" />
+          </mask>
+        ) : null}
+        <g strokeLinecap="round" strokeLinejoin="round" mask={hole ? `url(#${holeId})` : undefined}>
           {paths.map((p, i) => (
             <path key={i} d={p.d} stroke={p.stroke} fill={p.fill ?? "none"} strokeWidth={p.strokeWidth} />
           ))}
         </g>
+        {hole ? (
+          <g strokeLinecap="round" strokeLinejoin="round">
+            {holePaths.map((d, i) => (
+              <path key={i} d={d} stroke="currentColor" fill="none" strokeWidth={STROKE_WIDTH} />
+            ))}
+          </g>
+        ) : null}
       </svg>
     </button>
   )

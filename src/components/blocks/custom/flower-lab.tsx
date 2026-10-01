@@ -41,16 +41,18 @@ const BLOOM_SWATCHES: Swatch[] = [
 function SwatchRow({
   selectedIndex,
   shape,
+  centerHoleRatio,
   onSelect,
 }: {
   selectedIndex: number
   shape: BloomShape
+  centerHoleRatio: number
   onSelect: (i: number) => void
 }) {
   return (
     <SwatchGrid label="Swatch colour" cols="grid-cols-8" className="w-fit">
       {BLOOM_SWATCHES.map((s, i) => (
-        <ColorSwatch key={s.name} color={s.color} name={s.name} selected={i === selectedIndex} shape={shape} onClick={() => onSelect(i)} />
+        <ColorSwatch key={s.name} color={s.color} name={s.name} selected={i === selectedIndex} shape={shape} centerHoleRatio={centerHoleRatio} onClick={() => onSelect(i)} />
       ))}
     </SwatchGrid>
   )
@@ -94,6 +96,7 @@ const DEFAULTS = {
   petals: 6,
   bulge: 0.4,
   round: 1.2,
+  centerHole: 0.3, // punched-out centre-hole radius, as a fraction of the bloom radius
   colorIndex: 2, // Yellow — the site's brand accent
 }
 
@@ -112,6 +115,7 @@ export function FlowerLab({ index }: FlowerLabProps) {
   const [petals, setPetals] = useState(DEFAULTS.petals)
   const [bulge, setBulge] = useState(DEFAULTS.bulge)
   const [round, setRound] = useState(DEFAULTS.round)
+  const [centerHole, setCenterHole] = useState(DEFAULTS.centerHole)
   const [colorIndex, setColorIndex] = useState(DEFAULTS.colorIndex)
   // Remember the last preset we rolled so we never pick it twice in a row.
   const lastPresetRef = useRef(-1)
@@ -124,6 +128,7 @@ export function FlowerLab({ index }: FlowerLabProps) {
     setPetals(DEFAULTS.petals)
     setBulge(DEFAULTS.bulge)
     setRound(DEFAULTS.round)
+    setCenterHole(DEFAULTS.centerHole)
     setColorIndex(DEFAULTS.colorIndex)
   }
 
@@ -162,7 +167,7 @@ export function FlowerLab({ index }: FlowerLabProps) {
 
           {/* The bloom */}
           <div className="flex flex-1 items-center justify-center lg:min-h-0">
-            <Bloom size={240} radius={84} shape={shape} fill={fill} seed={7} strokeWidth={2} centerDot spin />
+            <Bloom size={240} radius={84} shape={shape} fill={fill} seed={7} strokeWidth={2} centerHole centerHoleRatio={centerHole} spin />
           </div>
 
           {/* The colour picker — the selected chip blooms and colours the flower above */}
@@ -172,7 +177,7 @@ export function FlowerLab({ index }: FlowerLabProps) {
               Pick a colour — the selected chip blooms in it, and the flower above takes the same colour. Every pick
               re-rolls a fresh shape.
             </p>
-            <SwatchRow selectedIndex={colorIndex} shape={shape} onSelect={pickColor} />
+            <SwatchRow selectedIndex={colorIndex} shape={shape} centerHoleRatio={centerHole} onSelect={pickColor} />
           </div>
         </div>
       </FadeInUp>
@@ -184,6 +189,7 @@ export function FlowerLab({ index }: FlowerLabProps) {
             <RoughSlider label="Petals" value={petals} min={3} max={10} step={1} onChange={setPetals} format={fmtInt} seed={51} />
             <RoughSlider label="Bulge" value={bulge} min={0.1} max={0.55} step={0.01} onChange={setBulge} format={fmt2} seed={52} />
             <RoughSlider label="Roundness" value={round} min={0.6} max={2.4} step={0.05} onChange={setRound} format={fmt2} seed={53} />
+            <RoughSlider label="Center hole" value={centerHole} min={0} max={0.4} step={0.01} onChange={setCenterHole} format={fmt2} seed={54} />
           </Card>
         </div>
       </FadeInUp>

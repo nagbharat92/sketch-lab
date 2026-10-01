@@ -8,7 +8,7 @@ const RESOLVED_ID = '\0virtual:content-pages'
 
 export default function contentPlugin() {
   return {
-    name: 'portfolio-content',
+    name: 'sketch-lab-content',
 
     resolveId(id) {
       if (id === VIRTUAL_ID) return RESOLVED_ID

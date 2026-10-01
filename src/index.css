@@ -49,6 +49,7 @@
   --color-sidebar-accent-foreground: var(--text);
   --color-sidebar-border: var(--border);
   --color-sidebar-ring: var(--text);
+  --radius-xs: calc(var(--radius) - 12px);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -269,11 +270,6 @@
   --hero-subtitle-gap:  var(--space-3);   /* 12px title → subtitle             */
   --hero-divider-gap:   var(--space-10);  /* 40px subtitle → divider line      */
 
-  /* ── Social links ─────────────────────────────────────────────────────────
-     Home social bar spacing. */
-  --social-gap-x:       var(--space-6);   /* 24px horizontal gap               */
-  --social-gap-y:       var(--space-2);   /*  8px vertical wrap gap             */
-
   /* ── Stats ────────────────────────────────────────────────────────────────
      Stats block item spacing. */
   --stats-gap:          var(--space-1_5); /*  6px gap between stat items       */
@@ -348,65 +344,6 @@
 
 :root {
   --radius: 1.5rem;
-}
-
-/* Typewriter copy-email animation */
-button:not([data-animating]):hover .typewriter-text {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-.typewriter-slot {
-  position: relative;
-  display: inline-block;
-}
-
-/* Invisible sizer that reserves the resting footprint ("email me") so the
-   surrounding paragraph never reflows while the label animates. The visible
-   label is overlaid absolutely, so its width changes don't affect layout. */
-.typewriter-ghost {
-  visibility: hidden;
-  white-space: nowrap;
-}
-
-.typewriter-text {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  border-right: 2px solid currentColor;
-  max-width: 0;
-  text-align: left;
-}
-
-.typewriter-text.typing-in {
-  animation: typeIn var(--duration-measured) var(--ease-in) forwards,
-             blinkCaret var(--duration-measured) step-end 2;
-}
-
-.typewriter-text.typing-out {
-  animation: typeOut var(--duration-measured) var(--ease-out) forwards;
-}
-
-.typewriter-text.idle {
-  max-width: none;
-  border-right-color: transparent;
-}
-
-@keyframes typeIn {
-  from { max-width: 0; }
-  to   { max-width: 10em; }
-}
-
-@keyframes typeOut {
-  from { max-width: 10em; }
-  to   { max-width: 0; }
-}
-
-@keyframes blinkCaret {
-  50% { border-color: transparent; }
 }
 
 /* =============================================================================
@@ -527,6 +464,10 @@ button:not([data-animating]):hover .typewriter-text {
   from { opacity: 1; transform: translateX(0); }
   to   { opacity: 0; transform: translateX(-100%); }
 }
+.drawer-pop {
+  /* Big, soft shadow lifts the sidepanel off the page (replaces the grey scrim). */
+  box-shadow: var(--shadow-drawer);
+}
 .drawer-pop[data-state="open"] {
   animation: drawer-pop-in 440ms both;
 }
@@ -545,15 +486,12 @@ button:not([data-animating]):hover .typewriter-text {
 
 /* =============================================================================
    DRAWER SCRIM — the sidebar drawer's modal backdrop.
-   A dark tint (no blur) that is strongest at the LEFT (behind / just past the
-   drawer) and fades out to the right via a mask, so content on the right stays
-   clear/readable. The pixel stops are anchored to the drawer (24px inset + 320px
-   wide ⇒ right edge ~344px), so the fall-off sits just past it.
+   Kept fully TRANSPARENT: it exists only as a click-outside-to-close dismiss
+   target. The sidepanel is instead lifted off the page by a big, soft shadow
+   (see .drawer-pop below) rather than by dimming the content behind it.
    ============================================================================= */
 .drawer-scrim {
-  background-color: rgb(0 0 0 / 0.26);
-  -webkit-mask-image: linear-gradient(to right, black, black 344px, transparent 760px);
-  mask-image: linear-gradient(to right, black, black 344px, transparent 760px);
+  background-color: transparent;
 }
 
 /* =============================================================================

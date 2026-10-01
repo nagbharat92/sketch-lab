@@ -11,5 +11,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: process.env.NODE_ENV === 'production' ? '/portfolio/' : '/',
+  // Dedicated dev-server port so this project never collides with other IDE
+  // projects (which grab the default 5173). strictPort = fail loudly instead of
+  // silently drifting onto another project's port.
+  server: {
+    port: 5190,
+    strictPort: true,
+  },
+  base: process.env.NODE_ENV === 'production' ? '/sketch-lab/' : '/',
 })

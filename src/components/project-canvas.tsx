@@ -45,7 +45,8 @@ export function ProjectCanvas({ page }: ProjectCanvasProps) {
             const isFullWidth =
               block.type === 'iframe' ||
               (block.type === 'custom' &&
-                (block.componentId === 'folder-lab' ||
+                (block.componentId === 'lab-home' ||
+                 block.componentId === 'folder-lab' ||
                 block.componentId === 'type-lab' ||
                 block.componentId === 'color-lab' ||
                 block.componentId === 'motion-lab' ||

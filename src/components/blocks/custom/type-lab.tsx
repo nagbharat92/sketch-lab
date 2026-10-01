@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import type { CSSProperties, ReactNode } from "react"
 import { RotateCcw } from "lucide-react"
 import { FadeInUp } from "@/components/ui/fade-in-up"
-import { Button } from "@/components/ui/button"
 import { CornerFrame } from "@/components/ui/corner-frame"
 import { RoughBox } from "@/components/ui/rough-ink"
 import { RoughSlider } from "@/components/lab/rough-slider"
@@ -205,21 +204,14 @@ function ResetButton({ onReset }: { onReset: () => void }) {
   )
 }
 
-/** A small dimmed label used above the figure specimens. */
-function MetaLabel({ children }: { children: ReactNode }) {
-  return (
-    <span className="mb-1.5 block font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-      {children}
-    </span>
-  )
-}
-
 /**
- * PairingCard — one curated preset in the carousel. Shows the two family names
- * set in their own faces (a live mini-preview) plus a one-line tagline, wrapped
- * in a hand-drawn rough outline. Selected = filled surface + darker ink.
+ * PairingRow — one curated preset as a compact, selectable row in the rail's
+ * pairing picker. Just the two faces (display over body), each set in its own
+ * family, so the pairing's character reads at a glance — the preset name lives
+ * on the aria-label, not a third line. A hand-drawn box frames the row and inks
+ * darker when it's the selected pairing.
  */
-function PairingCard({
+function PairingRow({
   pairing,
   selected,
   seed,
@@ -236,14 +228,11 @@ function PairingCard({
       type="button"
       role="radio"
       aria-checked={selected}
+      aria-label={`${pairing.name}: ${pairing.display.family} and ${pairing.body.family}`}
       onClick={onSelect}
       onPointerEnter={() => setHovering(true)}
       onPointerLeave={() => setHovering(false)}
-      style={{ "--lab-surface": "var(--color-sidebar)" } as CSSProperties}
-      className={cn(
-        "group relative flex w-60 shrink-0 snap-start flex-col gap-3 rounded-2xl p-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        selected ? "bg-(--lab-surface)" : "hover:bg-(--lab-surface)/50",
-      )}
+      className="group relative flex flex-col gap-0.5 rounded-xs px-3.5 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <RoughBox
         seed={seed}
@@ -251,35 +240,29 @@ function PairingCard({
         boil={hovering}
         className={cn(selected ? "text-foreground" : "text-border group-hover:text-muted-foreground")}
       />
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {pairing.name}
+      <span
+        style={{ fontFamily: cssFamily(pairing.display.family, DISPLAY_FALLBACK) }}
+        className={cn("text-base leading-tight", selected ? "text-foreground" : "text-foreground/80")}
+      >
+        {pairing.display.family}
       </span>
-      <div className="flex flex-col gap-1">
-        <span
-          style={{ fontFamily: cssFamily(pairing.display.family, DISPLAY_FALLBACK) }}
-          className="text-2xl leading-tight text-foreground"
-        >
-          {pairing.display.family}
-        </span>
-        <span
-          style={{ fontFamily: cssFamily(pairing.body.family, BODY_FALLBACK) }}
-          className="text-base leading-tight text-foreground/70"
-        >
-          {pairing.body.family}
-        </span>
-      </div>
-      <span className="text-sm leading-snug text-muted-foreground">{pairing.tagline}</span>
+      <span
+        style={{ fontFamily: cssFamily(pairing.body.family, BODY_FALLBACK) }}
+        className={cn("text-sm leading-tight", selected ? "text-foreground/70" : "text-foreground/45")}
+      >
+        {pairing.body.family}
+      </span>
     </button>
   )
 }
 
 /**
- * CustomCard — the last card in the carousel: browse the ENTIRE Google Fonts
- * library for each slot. Click a field and press ↑/↓ to cycle through every
- * family (previewed live), or type to filter. Selected when the active pairing
- * is "custom". Only the highlighted face is ever loaded, so browsing stays cheap.
+ * CustomRow — the last entry in the pairing picker: browse the ENTIRE Google
+ * Fonts library for each slot via a searchable, non-dropdown combobox (type, or
+ * press ↑/↓ to cycle — each family previewed live). Choosing a family switches
+ * the specimen to "custom"; only the highlighted face is ever loaded.
  */
-function CustomCard({
+function CustomRow({
   selected,
   displayFamily,
   bodyFamily,
@@ -302,13 +285,9 @@ function CustomCard({
       aria-label="Custom pairing"
       onPointerEnter={() => setHovering(true)}
       onPointerLeave={() => setHovering(false)}
-      style={{ "--lab-surface": "var(--color-sidebar)" } as CSSProperties}
-      className={cn(
-        "relative flex w-72 shrink-0 snap-start flex-col gap-3 rounded-2xl p-5",
-        selected && "bg-(--lab-surface)",
-      )}
+      className="relative flex flex-col gap-2.5 rounded-xs px-3.5 py-3"
     >
-      <RoughBox seed={seed} radius={16} inset={3} boil={hovering} className={cn(selected ? "text-foreground" : "text-border")} />
+      <RoughBox seed={seed} inset={3} boil={hovering} className={cn(selected ? "text-foreground" : "text-border")} />
       <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Custom</span>
       <FontCombobox
         label="Display font"
@@ -326,45 +305,8 @@ function CustomCard({
         seed={seed + 2}
         onChange={onBodyChange}
       />
-      <p className="mt-auto pt-1 text-xs leading-relaxed text-muted-foreground">
-        Every family on Google Fonts — type to search, or press ↑↓ to browse.
-      </p>
     </div>
   )
-}
-
-/**
- * Track a horizontal scroller so the carousel can fade whichever edge still has
- * cards out of view. The fade PERSISTS while content is hidden that side (so the
- * cards never hard-clip) and eases in / out via the scrims' opacity transition
- * as you scroll to and from each end. Returns the ref + two booleans for the
- * leading / trailing edge scrims.
- */
-function useCarouselFade<T extends HTMLElement>() {
-  const ref = useRef<T>(null)
-  const [edges, setEdges] = useState({ start: false, end: false })
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const measure = () => {
-      // Tolerance clears the leading/trailing scroll padding, so snap-mandatory
-      // resting at that offset doesn't read as "scrolled" (no fade at the ends).
-      const start = el.scrollLeft > 8
-      const end = el.scrollLeft < el.scrollWidth - el.clientWidth - 8
-      setEdges((prev) => (prev.start === start && prev.end === end ? prev : { start, end }))
-    }
-    measure()
-    el.addEventListener("scroll", measure, { passive: true })
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    return () => {
-      el.removeEventListener("scroll", measure)
-      ro.disconnect()
-    }
-  }, [])
-
-  return { ref, showStart: edges.start, showEnd: edges.end }
 }
 
 /**
@@ -394,9 +336,6 @@ export function TypeLab({ index }: TypeLabProps) {
   const [headingScale, setHeadingScale] = useState(DEFAULTS.headingScale)
   const [tracking, setTracking] = useState(DEFAULTS.tracking)
   const [headingsUseBody, setHeadingsUseBody] = useState(DEFAULTS.headingsUseBody)
-
-  // Fade the carousel's edges while actively scrolling (eases in on scroll).
-  const { ref: carouselRef, showStart, showEnd } = useCarouselFade<HTMLDivElement>()
 
   const reset = () => {
     setPairingId(DEFAULTS.pairingId)
@@ -478,61 +417,10 @@ export function TypeLab({ index }: TypeLabProps) {
   })
 
   return (
-    <div className="flex w-full flex-col gap-8">
-      {/* ── PAIRINGS — scroll through curated presets, then Custom ─────────── */}
-      <FadeInUp i={index} className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between px-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pairings</h2>
-          <span className="text-xs text-muted-foreground/70">Scroll to explore →</span>
-        </div>
-        <div className="relative">
-          <div
-            ref={carouselRef}
-            role="radiogroup"
-            aria-label="Font pairings"
-            className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pt-1 pb-4 [scrollbar-width:thin]"
-          >
-            {PAIRINGS.map((p, i) => (
-              <PairingCard
-                key={p.id}
-                pairing={p}
-                selected={!isCustom && pairingId === p.id}
-                seed={40 + i}
-                onSelect={() => setPairingId(p.id)}
-              />
-            ))}
-            <CustomCard
-              selected={isCustom}
-              displayFamily={customDisplay}
-              bodyFamily={customBody}
-              seed={60}
-              onDisplayChange={setDisplay}
-              onBodyChange={setBody}
-            />
-          </div>
-          {/* Edge scrims — ease in only while scrolling, on the side that still
-              has cards to reveal (fade to the page bg, like the Strokes seam). */}
-          <div
-            aria-hidden
-            className={cn(
-              "pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r from-background to-transparent transition-opacity duration-300",
-              showStart ? "opacity-100" : "opacity-0",
-            )}
-          />
-          <div
-            aria-hidden
-            className={cn(
-              "pointer-events-none absolute inset-y-0 right-0 w-10 bg-linear-to-l from-background to-transparent transition-opacity duration-300",
-              showEnd ? "opacity-100" : "opacity-0",
-            )}
-          />
-        </div>
-      </FadeInUp>
-
-      {/* ── SPECIMEN + RAIL ────────────────────────────────────────────────── */}
-      <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
-      {/* ── SPECIMEN — the reading column, on a recessed stage ─────────────── */}
-      <FadeInUp i={index + 1} className="min-w-0 flex-1">
+    <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+      {/* ── SPECIMEN — the reading column, PINNED (sticky) so it stays visible
+          while the controls rail scrolls; kept short to fit a laptop viewport ── */}
+      <FadeInUp i={index} className="min-w-0 flex-1 lg:sticky lg:top-(--content-pt)">
         <div
           style={specimenStyle}
           className="relative rounded-2xl bg-(--lab-stage) p-10"
@@ -552,121 +440,62 @@ export function TypeLab({ index }: TypeLabProps) {
 
             <p
               style={{ ...bodyStyle, fontSize: "calc(var(--type-body-size) * 1.2)" }}
-              className="mt-5 text-muted-foreground"
+              className="mt-4 text-muted-foreground"
             >
-              A pairing works when the display face and the body face disagree just
-              enough — enough contrast to signal hierarchy, enough harmony to feel
-              like a single voice.
+              A pairing works when the display and body faces disagree just enough —
+              contrast to signal hierarchy, harmony to read as one voice.
             </p>
 
-            <h2 style={heading("1.5rem")} className="mt-12 text-foreground">
+            <h2 style={heading("1.5rem")} className="mt-8 text-foreground">
               Reading at length
             </h2>
-            <p style={bodyStyle} className="mt-4 text-foreground/80">
-              This is body copy at the reading size. Judge it by the paragraph, not
-              the letter: watch the rhythm of the lines, the colour of the block, and
-              how the eye returns to the left margin. Emphasis should feel calm — a{" "}
-              <strong className="font-semibold text-foreground">bold phrase</strong>{" "}
-              here, an <em className="italic">italic aside</em> there — and an{" "}
+            <p style={bodyStyle} className="mt-3 text-foreground/80">
+              Body copy at the reading size — judge it by the paragraph, not the
+              letter. Emphasis stays calm: a{" "}
+              <strong className="font-semibold text-foreground">bold phrase</strong>,
+              an <em className="italic">italic aside</em>, an{" "}
               <a
                 href="#"
                 className="underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
               >
                 inline link
               </a>{" "}
-              should read as part of the sentence, not a speed bump. Even{" "}
+              and even{" "}
               <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.9em]">
                 inline code
               </code>{" "}
-              has to sit comfortably on the line.
-            </p>
-
-            <h3 style={heading("1.125rem")} className="mt-9 text-foreground">
-              Where the two voices meet
-            </h3>
-            <p style={bodyStyle} className="mt-3 text-foreground/80">
-              The seam between a heading and the paragraph below it is where a pairing
-              is won or lost. Too similar and the hierarchy collapses; too different
-              and the page feels assembled from spare parts.
-            </p>
-
-            <p className="mt-5">
-              <a
-                href="#"
-                style={bodyStyle}
-                className="inline-flex items-center gap-1 font-medium text-foreground underline underline-offset-4 transition-colors duration-150 hover:text-muted-foreground"
-              >
-                Read the full type system →
-              </a>
-            </p>
-
-            <div className="mt-8 grid gap-8 sm:grid-cols-2">
-              <ul
-                style={bodyStyle}
-                className="list-disc space-y-1.5 pl-6 text-foreground/80 marker:text-muted-foreground"
-              >
-                <li>Contrast between the two faces</li>
-                <li>Legibility of the body at reading size</li>
-                <li>How links and emphasis behave in text</li>
-              </ul>
-              <ol
-                style={bodyStyle}
-                className="list-decimal space-y-1.5 pl-6 text-foreground/80 marker:text-muted-foreground"
-              >
-                <li>Set the body first</li>
-                <li>Choose a display face that argues with it</li>
-                <li>Tune scale, leading and measure last</li>
-              </ol>
-            </div>
-
-            <blockquote
-              style={{ ...bodyStyle, fontSize: "calc(var(--type-body-size) * 1.15)" }}
-              className="mt-10 border-l-2 border-border pl-5 italic text-foreground/90"
-            >
-              “Type is a voice. A pairing is a conversation — and the reader should
-              never notice the two speakers taking turns.”
-            </blockquote>
-
-            {/* Figures — display vs body numerals sit very differently */}
-            <div className="mt-10 flex flex-wrap gap-x-12 gap-y-4">
-              <div>
-                <MetaLabel>Display figures</MetaLabel>
-                <span style={heading("1.5rem")} className="text-foreground">
-                  0123456789
-                </span>
-              </div>
-              <div>
-                <MetaLabel>Body figures</MetaLabel>
-                <span style={bodyStyle} className="text-foreground">
-                  0123456789 · 2026 · $1,240 · 3.14
-                </span>
-              </div>
-            </div>
-
-            {/* UI text — the pairing living inside interface chrome */}
-            <div className="mt-10">
-              <MetaLabel>Interface</MetaLabel>
-              <div style={{ fontFamily: "var(--type-body)" }} className="flex flex-wrap items-center gap-3">
-                <Button>Primary action</Button>
-                <Button variant="outline">Secondary</Button>
-                <Button variant="link" className="px-0">
-                  Text link
-                </Button>
-              </div>
-            </div>
-
-            <p style={bodyStyle} className="mt-10 text-sm text-muted-foreground">
-              Caption and metadata — the smallest text on the page. If a pairing
-              survives here, at the bottom of the hierarchy, it will survive anywhere.
+              sitting comfortably on the line.
             </p>
           </div>
         </div>
       </FadeInUp>
 
-      {/* ── CONTROLS — a sticky rail beside the specimen ──────────────────── */}
-      <FadeInUp i={index + 2} className="w-full shrink-0 lg:sticky lg:top-(--content-pt) lg:w-80">
+      {/* ── CONTROLS — a scrolling rail beside the pinned specimen ─────────── */}
+      <FadeInUp i={index + 1} className="w-full shrink-0 lg:w-80">
         <div className="flex flex-col gap-4">
-          <Card title="Why it works" action={<ResetButton onReset={reset} />}>
+          <Card title="Pairing" action={<ResetButton onReset={reset} />}>
+            <div role="radiogroup" aria-label="Font pairings" className="flex flex-col gap-2">
+              {PAIRINGS.map((p, i) => (
+                <PairingRow
+                  key={p.id}
+                  pairing={p}
+                  selected={!isCustom && pairingId === p.id}
+                  seed={40 + i}
+                  onSelect={() => setPairingId(p.id)}
+                />
+              ))}
+              <CustomRow
+                selected={isCustom}
+                displayFamily={customDisplay}
+                bodyFamily={customBody}
+                seed={60}
+                onDisplayChange={setDisplay}
+                onBodyChange={setBody}
+              />
+            </div>
+          </Card>
+
+          <Card title="Why it works">
             <p className="text-sm leading-relaxed text-foreground/80">
               <span className="font-semibold text-foreground">{activeName}. </span>
               {whyText}
@@ -688,7 +517,6 @@ export function TypeLab({ index }: TypeLabProps) {
           </Card>
         </div>
       </FadeInUp>
-      </div>
     </div>
   )
 }

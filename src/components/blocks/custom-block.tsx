@@ -1,6 +1,5 @@
 import type { CustomBlock } from "@/data/pages"
-import { HomeHero } from "@/components/blocks/custom/home-hero"
-import { HomeSocial } from "@/components/blocks/custom/home-social"
+import { LabHome } from "@/components/blocks/custom/lab-home"
 import { FolderLab } from "@/components/blocks/custom/folder-lab"
 import { TypeLab } from "@/components/blocks/custom/type-lab"
 import { ColorLab } from "@/components/blocks/custom/color-lab"
@@ -23,8 +22,7 @@ type CustomBlockComponent = React.ComponentType<{
  *   3. Add one entry to REGISTRY
  */
 const REGISTRY: Record<string, CustomBlockComponent> = {
-  'home-hero':   HomeHero,
-  'home-social': HomeSocial,
+  'lab-home':    LabHome,
   'folder-lab':  FolderLab,
   'type-lab':    TypeLab,
   'color-lab':   ColorLab,

@@ -2,12 +2,10 @@ import {
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react"
-import { createPortal } from "react-dom"
 import { RoughBox } from "@/components/ui/rough-ink"
 
 /**
@@ -36,39 +34,16 @@ interface FontComboboxProps {
   onChange: (family: string) => void
 }
 
-const MAX_LIST_HEIGHT = 288 // px — matches max-h-72 on the list.
-
-type Placement = {
-  left: number
-  width: number
-  top?: number
-  bottom?: number
-  maxHeight: number
-}
-
-/** Position a fixed popover under (or above) an anchor, within the viewport. */
-function computePlacement(anchor: HTMLElement): Placement {
-  const rect = anchor.getBoundingClientRect()
-  const gap = 6
-  const margin = 8
-  const belowSpace = window.innerHeight - rect.bottom - margin
-  const aboveSpace = rect.top - margin
-  const placeAbove = belowSpace < 200 && aboveSpace > belowSpace
-  const maxHeight = Math.min(
-    MAX_LIST_HEIGHT,
-    Math.max(140, (placeAbove ? aboveSpace : belowSpace) - gap),
-  )
-  return placeAbove
-    ? { left: rect.left, width: rect.width, bottom: window.innerHeight - rect.top + gap, maxHeight }
-    : { left: rect.left, width: rect.width, top: rect.bottom + gap, maxHeight }
-}
+// The dropdown is rendered inline (absolutely positioned right below the field),
+// NOT in a portal: the pairings carousel that once required portalling (its
+// overflow-x-auto would have clipped the menu) is gone, so nothing clips it and
+// it stays attached to the field with zero positioning JS.
 
 export function FontCombobox({ label, value, placeholder, fonts, seed, onChange }: FontComboboxProps) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value)
   const [filterQuery, setFilterQuery] = useState("")
   const [activeIndex, setActiveIndex] = useState(0)
-  const [placement, setPlacement] = useState<Placement | null>(null)
 
   const anchorRef = useRef<HTMLLabelElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -113,27 +88,6 @@ export function FontCombobox({ label, value, placeholder, fonts, seed, onChange 
     [filtered, onChange, close],
   )
 
-  // Position the portal while open; keep it pinned on scroll / resize.
-  useLayoutEffect(() => {
-    if (!open) return
-    const update = () => {
-      if (anchorRef.current) setPlacement(computePlacement(anchorRef.current))
-    }
-    update()
-    let raf = 0
-    const schedule = () => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(update)
-    }
-    window.addEventListener("scroll", schedule, true)
-    window.addEventListener("resize", schedule)
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener("scroll", schedule, true)
-      window.removeEventListener("resize", schedule)
-    }
-  }, [open])
-
   // Close on a pointer press outside the field and the popover.
   useEffect(() => {
     if (!open) return
@@ -154,12 +108,12 @@ export function FontCombobox({ label, value, placeholder, fonts, seed, onChange 
     const prev = ul.querySelector('[aria-selected="true"]')
     if (prev) {
       prev.setAttribute("aria-selected", "false")
-      prev.classList.remove("bg-muted")
+      prev.classList.remove("bg-sidebar-accent")
     }
     const el = ul.children[activeIndex] as HTMLElement | undefined
     if (el) {
       el.setAttribute("aria-selected", "true")
-      el.classList.add("bg-muted")
+      el.classList.add("bg-sidebar-accent")
       el.scrollIntoView({ block: "nearest" })
     }
   }, [activeIndex, filtered, open])
@@ -224,7 +178,7 @@ export function FontCombobox({ label, value, placeholder, fonts, seed, onChange 
           data-index={i}
           onMouseEnter={handleHover}
           onMouseDown={handlePick}
-          className="flex h-8 cursor-pointer items-center truncate px-3 text-sm text-foreground/80"
+          className="flex h-8 cursor-pointer items-center truncate px-3 text-sm text-sidebar-foreground/80"
         >
           {name}
         </li>
@@ -233,7 +187,7 @@ export function FontCombobox({ label, value, placeholder, fonts, seed, onChange 
   )
 
   return (
-    <label ref={anchorRef} className="flex flex-col gap-1">
+    <label ref={anchorRef} className="relative flex flex-col gap-1">
       <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className="relative block text-border">
         <input
@@ -259,46 +213,40 @@ export function FontCombobox({ label, value, placeholder, fonts, seed, onChange 
             if (!open) setOpen(true)
           }}
           onKeyDown={onKeyDown}
-          className="w-full rounded-lg bg-transparent px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus-visible:text-foreground"
+          className="w-full rounded-xs bg-transparent px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus-visible:text-foreground"
         />
-        <RoughBox seed={seed} inset={2} className="text-border" />
+        <RoughBox seed={seed} radius={12} inset={2} className="text-border" />
       </span>
 
-      {open &&
-        placement &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            ref={popoverRef}
-            style={{
-              position: "fixed",
-              left: placement.left,
-              width: placement.width,
-              top: placement.top,
-              bottom: placement.bottom,
-              zIndex: 60,
-            }}
-          >
-            <div className="relative rounded-xl bg-background">
-              <RoughBox seed={seed + 100} radius={11} inset={2} className="text-border" />
+      {open && (
+        <div ref={popoverRef} className="absolute inset-x-0 top-full z-50 mt-1">
+          <div className="relative rounded-xs" style={{ boxShadow: "var(--shadow-drawer)" }}>
+            {/* Fill clipped to the rounded corners; the ink stroke sits OUTSIDE
+                the clip (sibling) so its hand-drawn wobble isn't cut off. The
+                sidepanel surface (bg-sidebar) with the restrained rounded-xs
+                corners we use on the rows/fields, not the sidepanel's rounded-xl. */}
+            <div className="overflow-hidden rounded-xs bg-sidebar text-sidebar-foreground">
               {filtered.length ? (
                 <ul
                   ref={listRef}
                   id={listId}
                   role="listbox"
                   aria-label={label}
-                  style={{ maxHeight: placement.maxHeight }}
-                  className="relative overflow-y-auto py-1 [scrollbar-width:thin]"
+                  className="max-h-72 overflow-y-auto py-2 [scrollbar-width:thin]"
                 >
                   {items}
                 </ul>
               ) : (
-                <p className="relative px-3 py-3 text-sm text-muted-foreground">No matching family.</p>
+                <p className="px-3 py-3 text-sm text-sidebar-foreground/60">No matching family.</p>
               )}
             </div>
-          </div>,
-          document.body,
-        )}
+            {/* Same stroke treatment as the sidepanel (boiling ink, bowing 1) but
+                the restrained 12px corner (rounded-xs) → ink at 12-3 = 9px,
+                concentric and matching the rows/fields. */}
+            <RoughBox seed={seed + 100} radius={12} inset={3} boil bowing={1} className="text-sidebar-foreground/70" />
+          </div>
+        </div>
+      )}
     </label>
   )
 }

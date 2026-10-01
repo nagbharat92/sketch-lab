@@ -1,4 +1,3 @@
-import { useRef, useCallback, useState } from "react"
 import { House } from "lucide-react"
 import {
   Sidebar,
@@ -11,74 +10,11 @@ import { FolderTree, useFolderTree, useSidebarNavigate } from "@/components/fold
 import { RoughBox } from "@/components/ui/rough-ink"
 import { cn } from "@/lib/utils"
 
-const EMAIL = "nagbharat92@gmail.com"
 const linkClasses = "ink-boil font-bold text-sidebar-foreground underline-offset-4 hover:underline inline-flex items-baseline gap-1"
 
 export function AppSidebar({ setDark }: { setDark: (fn: (d: boolean) => boolean) => void }) {
   const { selectedId } = useFolderTree()
   const navigate = useSidebarNavigate()
-  const labelRef = useRef<HTMLSpanElement>(null)
-  const btnRef = useRef<HTMLButtonElement>(null)
-  const [busy, setBusy] = useState(false)
-
-  const handleCopy = useCallback(async () => {
-    const label = labelRef.current
-    const btn = btnRef.current
-    if (!label || !btn || busy) return
-    setBusy(true)
-
-    // Copy to clipboard
-    try {
-      await navigator.clipboard.writeText(EMAIL)
-    } catch {
-      const ta = document.createElement("textarea")
-      ta.value = EMAIL
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand("copy")
-      ta.remove()
-    }
-
-    // Remove underline hover during animation
-    btn.dataset.animating = "true"
-
-    // Phase 1: erase "email me"
-    label.className = "typewriter-text typing-out"
-
-    label.addEventListener("animationend", function onErased() {
-      label.removeEventListener("animationend", onErased)
-
-      // Phase 2: type "copied!"
-      label.textContent = "copied!"
-      btn.classList.add("pointer-events-none", "cursor-default")
-      label.className = "typewriter-text typing-in"
-
-      label.addEventListener("animationend", function onTyped() {
-        label.removeEventListener("animationend", onTyped)
-        label.className = "typewriter-text idle"
-
-        // Phase 3: hold, then erase and restore
-        setTimeout(() => {
-          label.className = "typewriter-text typing-out"
-
-          label.addEventListener("animationend", function onErased2() {
-            label.removeEventListener("animationend", onErased2)
-
-            label.textContent = "email me"
-            label.className = "typewriter-text typing-in"
-
-            label.addEventListener("animationend", function onRestored() {
-              label.removeEventListener("animationend", onRestored)
-              label.className = "typewriter-text idle"
-              btn.classList.remove("pointer-events-none", "cursor-default")
-              delete btn.dataset.animating
-              setBusy(false)
-            })
-          })
-        }, 1500)
-      })
-    })
-  }, [busy])
   return (
     <Sidebar>
       <SidebarHeader className="p-(--sidebar-content-padding) pb-(--sidebar-section-gap)">
@@ -105,31 +41,12 @@ export function AppSidebar({ setDark }: { setDark: (fn: (d: boolean) => boolean)
 
       <SidebarFooter className="p-(--sidebar-footer-padding)">
         <p className="text-sm text-sidebar-foreground/70">
-          Find me on{" "}
-          <a href="https://x.com/bharatnag92" target="_blank" rel="noopener noreferrer" className={linkClasses}>
-            @bharatnag92
+          By Bharat Nag
+        </p>
+        <p className="text-sm text-sidebar-foreground/70">
+          <a href="https://github.com/nagbharat92/sketch-lab" target="_blank" rel="noopener noreferrer" className={linkClasses}>
+            View source
           </a>
-          , browse my personal projects on{" "}
-          <a href="https://github.com/nagbharat92" target="_blank" rel="noopener noreferrer" className={linkClasses}>
-            GitHub
-          </a>
-          , connect on{" "}
-          <a href="https://www.linkedin.com/in/bharatnag/" target="_blank" rel="noopener noreferrer" className={linkClasses}>
-            LinkedIn
-          </a>
-          , or{" "}
-          <button
-            ref={btnRef}
-            onClick={handleCopy}
-            aria-label="Copy email to clipboard"
-            className={`${linkClasses} cursor-pointer`}
-          >
-            <span className="typewriter-slot">
-              <span aria-hidden="true" className="typewriter-ghost">email me</span>
-              <span ref={labelRef} className="typewriter-text idle">email me</span>
-            </span>
-          </button>
-          .
         </p>
         <p className="text-sm text-sidebar-foreground/70">
           Shift the{" "}

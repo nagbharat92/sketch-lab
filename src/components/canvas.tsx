@@ -4,7 +4,7 @@ import { ProjectCanvas } from "@/components/project-canvas"
 import { transitions } from "@/lib/motion"
 
 /**
- * Canvas — main content area of the portfolio.
+ * Canvas — main content area of Sketch Lab.
  *
  * Handles sequential page transitions via AnimatePresence mode="wait".
  * On page switch the old page fades out completely (200ms, ease-in),

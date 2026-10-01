@@ -1,22 +1,14 @@
-# Documentation
+# Sketch Lab documentation
 
-## Structure
+- [Project summary](PROJECT-SUMMARY.md): purpose, architecture and local conversion status.
+- `design-system/`: retained token, typography and component design references.
+- `motion/`: content-transition rationale and specification.
+- `archive/`: historical portfolio plans, the June project summary and content-authoring handoff. These describe earlier work, not the current roadmap.
 
-```
-docs/
-├── features/           — Feature PRDs and specifications
-│   └── canvas/
-│       └── feature-canvas-prd-01-data-model.md
-├── design-system/      — Design system tokens, APIs, and guidelines
-│   ├── 01-primitive-token-layer.md
-│   ├── 02-typography-tokens.md
-│   ├── 03-motion-tokens.md
-│   ├── 04-component-api-shape.md
-│   └── 05-token-documentation.md
-└── README.md
-```
+## Source of truth
 
-## Conventions
+The retained design-system and motion documents explain the underlying approach, but some examples predate the current labs. Use `src/tokens.css` and `src/index.css` for current theme, spacing and typography values; `src/lib/ink.ts`, `src/lib/text-boil.ts` and `src/lib/motion.ts` for current drawing and animation settings.
 
-- **features/** — One file per PRD, named `feature-<name>-prd-<##>-<slug>.md`
-- **design-system/** — Numbered sequentially to indicate reading order
+Lab entries live directly under `src/data/content/`. Their `order` controls both the flat navigation list and the home previews. Interactive implementations live under `src/components/blocks/custom/`.
+
+Archived PRDs remain useful historical context. Their portfolio-specific instructions, old file paths and next steps are not active requirements.

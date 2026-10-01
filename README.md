@@ -1,20 +1,41 @@
-# React + Vite
+# Sketch Lab
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Experiments in hand-drawn interfaces. A place to play with sketchy strokes, typography, colour, motion and controls.
 
-## Live Portfolio
+## Labs
 
-View the live site here: [nagbharat92.github.io/portfolio](https://nagbharat92.github.io/portfolio/)
+Strokes, Type, Colour, Motion, Bloom, Controls and Wobble. Each lab exposes live controls for exploring its visual style. The home page provides previews; the Explore drawer lists the labs directly. Utilities includes a Blank page for recording interactions against an empty background.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```sh
+npm ci
+npm run dev
+```
 
-## React Compiler
+Open `http://localhost:5190/`. The port is fixed; Vite reports an error if it is already occupied. Changes reload automatically.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```sh
+npm run build
+npm run lint
+npx tsc --noEmit
+```
 
-## Expanding the ESLint configuration
+## Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `src/data/content/`: Markdown entries that register and order the labs.
+- `src/components/blocks/custom/`: interactive lab pages and the home page.
+- `src/components/lab/`: shared sketchy controls and drawing helpers.
+- `src/lib/`: ink, bloom and motion settings.
+- `src/tokens.css`: light/dark theme colours.
+- `docs/`: current reference documents and archived portfolio plans.
+
+React 19, TypeScript, Vite, Tailwind CSS v4, Radix UI, roughjs and Framer Motion. Hash routing works with static hosting.
+
+## Live site and source
+
+Explore [Sketch Lab](https://nagbharat92.github.io/sketch-lab/) or browse the [source repository](https://github.com/nagbharat92/sketch-lab).
+
+GitHub Actions builds and deploys pushes to `main` through GitHub Pages. Vite uses `/sketch-lab/` as the production base. This repository was previously named `portfolio`; its history is retained.
+
+By Bharat Nag.

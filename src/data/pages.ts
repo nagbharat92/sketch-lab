@@ -1,5 +1,5 @@
 /**
- * pages.ts — Portfolio content data
+ * pages.ts — Sketch Lab content data
  *
  * Single source of truth for sidebar navigation and all canvas page content.
  *
@@ -114,8 +114,7 @@ export type DividerBlock = {
  * props is an optional bag of data passed to the component.
  *
  * Registered componentIds:
- *   'home-hero'    — large name + tagline + short accent line (Home page only)
- *   'home-social'  — social links row (Home page only)
+ *   'lab-home'     — introduction and visual links to the labs
  *
  * Use sparingly. Reach for a standard block type first.
  */
@@ -166,10 +165,10 @@ export type SidebarNode = FolderNode | PageNode
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
+export const labPages = contentTree.filter((node): node is PageNode => node.type === 'page')
+
 export const sidebarData: SidebarNode[] = [
-  // The merged landing page — the site's front door. Reached via the "Home"
-  // control in the sidebar header (not rendered as a tree item). Holds the
-  // personal-intro content (hero + bio + social links).
+  // Home is reached through the sidebar header, not the lab list.
   {
     id: 'home',
     type: 'page',
@@ -177,23 +176,26 @@ export const sidebarData: SidebarNode[] = [
     blocks: [
       {
         type: 'custom',
-        componentId: 'home-hero',
-      },
-      {
-        type: 'text',
-        body: `I spend my time at the intersection of design and engineering — making things that feel considered, building tools that get out of the way, and learning in public. Currently exploring what thoughtful product design looks like at a smaller scale.
-
-This site is a living project. Everything here — the design system, the canvas, the tools — is being built from scratch and in the open. Work in progress by design.`,
-      },
-      {
-        type: 'custom',
-        componentId: 'home-social',
+        componentId: 'lab-home',
       },
     ],
   },
 
-  // Content pages — generated from .md files in src/data/content/
   ...contentTree,
+
+  {
+    id: 'utilities',
+    type: 'folder',
+    name: 'Utilities',
+    children: [
+      {
+        id: 'blank',
+        type: 'page',
+        name: 'Blank',
+        blocks: [],
+      },
+    ],
+  },
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

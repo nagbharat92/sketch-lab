@@ -25,11 +25,18 @@ interface RoughSliderProps {
   gradient?: string[]
   /** Optional live colour for the knob face (the currently-selected colour). */
   thumbColor?: string
+  /**
+   * When set, draws the rail as a THICK stroke (px) roughly the size of the knob
+   * (or a touch bigger) instead of the default hairline — "a version of the
+   * original slider" where the knob reads as a bead nestled in the rail. The knob
+   * then travels inside the rail's rounded ends. Omit for the default thin rail
+   * (behaviour unchanged).
+   */
+  railWidth?: number
 }
 
 const HEIGHT = 40
 const CY = HEIGHT / 2
-const TRACK_X1 = 0 // track spans the full width so its ends align with the label row
 const THUMB_R = 9
 /** The colour face sits inset from the ink outline (its centre rides at THUMB_R)
  *  so a ~1px ring of the neutral base surface always shows between them. Without
@@ -96,6 +103,7 @@ export function RoughSlider({
   seed = 200,
   gradient,
   thumbColor,
+  railWidth,
 }: RoughSliderProps) {
   const [trackRef, w] = useTrackWidth<HTMLDivElement>()
   const [dragging, setDragging] = useState(false)
@@ -106,13 +114,20 @@ export function RoughSlider({
   const clipId = `slider-fill-${uid}`
   const gradId = `slider-grad-${uid}`
   const railStroke = gradient ? `url(#${gradId})` : "currentColor"
+  // A `railWidth` opts into a THICK rail (≈ the knob's size). The rail then insets
+  // its endpoints by half its width so the round caps land flush with the ends and
+  // the knob nestles inside them.
+  const fat = railWidth !== undefined
+  const railInset = fat ? railWidth / 2 : 0
   // Coloured rails ride a touch wider so the neutral-ink casing behind them
   // reads as a thin keyline; the casing is wider still.
-  const railW = STROKE_WIDTH + (gradient ? 1 : 0)
-  const casingW = STROKE_WIDTH + 2.5
+  const railW = fat ? railWidth : STROKE_WIDTH + (gradient ? 1 : 0)
+  const fillW = fat ? railWidth + 1 : STROKE_WIDTH + 1
+  const casingW = fat ? railWidth + 2.5 : STROKE_WIDTH + 2.5
 
-  const trackX2 = Math.max(TRACK_X1 + 1, w)
-  const track = useMemo(() => linePaths(TRACK_X1, CY, trackX2, CY, seed), [seed, trackX2])
+  const trackX1 = railInset
+  const trackX2 = Math.max(trackX1 + 1, w - railInset)
+  const track = useMemo(() => linePaths(trackX1, CY, trackX2, CY, seed), [seed, trackX1, trackX2])
   // Pop + boil only while pointing at (or pressing) the knob — never on keyboard
   // focus — and never under reduced-motion. On mouse-exit both flags clear, so
   // the knob snaps its seed/bowing back and springs down to its resting size.
@@ -131,11 +146,12 @@ export function RoughSlider({
     return parseFloat(clamp(stepped, min, max).toFixed(4))
   }
 
-  // Rail spans the full width (TRACK_X1..trackX2 = the label row), but the THUMB
-  // travels inset by its radius so its EDGE — not its centre — lands on the ends:
-  // the knob stops flush with the text instead of overshooting past it.
-  const thumbMinX = TRACK_X1 + THUMB_R
-  const thumbMaxX = Math.max(thumbMinX + 1, trackX2 - THUMB_R)
+  // For a THIN rail the THUMB travels inset by its radius so its EDGE — not its
+  // centre — lands on the ends (knob stops flush with the label). For a THICK
+  // rail the knob rides INSIDE the rail, so its centre travels to the rail's
+  // rounded ends (trackX1..trackX2).
+  const thumbMinX = fat ? trackX1 : trackX1 + THUMB_R
+  const thumbMaxX = Math.max(thumbMinX + 1, fat ? trackX2 : trackX2 - THUMB_R)
 
   const fraction = (value - min) / (max - min)
   const thumbX = thumbMinX + fraction * (thumbMaxX - thumbMinX)
@@ -308,7 +324,7 @@ export function RoughSlider({
             clipPath={`url(#${clipId})`}
             fill="none"
             stroke={railStroke}
-            strokeWidth={STROKE_WIDTH + 1}
+            strokeWidth={fillW}
             strokeLinecap="round"
             className={gradient ? undefined : "text-foreground"}
           >

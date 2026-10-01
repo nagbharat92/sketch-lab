@@ -259,14 +259,14 @@ function ThemePreview({ p, label, seed }: { p: Palette; label: string; seed: num
                 className="grid size-9 shrink-0 place-items-center rounded-full text-[13px] font-bold"
                 style={{ backgroundColor: accent, color: accentInk }}
               >
-                BN
+                SL
               </span>
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold leading-tight" style={{ color: text }}>
-                  Bharat Nag
+                  Sketch Lab
                 </div>
                 <div className="truncate text-xs" style={{ color: muted }}>
-                  Product designer
+                  Hand-drawn interfaces
                 </div>
               </div>
             </div>
