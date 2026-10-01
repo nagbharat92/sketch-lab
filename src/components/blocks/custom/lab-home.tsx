@@ -134,7 +134,8 @@ export function LabHome({ index }: { index: number; props?: Record<string, unkno
         </nav>
       </FadeInUp>
       <FadeInUp i={index + 2}>
-        <footer className="mx-auto mt-12 max-w-xl text-center">
+        <RoughLine seed={23} className="mx-auto mt-12 w-16 text-muted-foreground/60" />
+        <footer className="mx-auto mt-20 max-w-xl text-center sm:mt-24">
           <SeattleSignature />
           <a
             href="https://github.com/nagbharat92/sketch-lab"
