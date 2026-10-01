@@ -2,6 +2,8 @@
 
 Experiments in hand-drawn interfaces. A place to play with sketchy strokes, typography, colour, motion and controls.
 
+Try Sketch Lab: [https://nagbharat92.github.io/sketch-lab/](https://nagbharat92.github.io/sketch-lab/).
+
 ## Labs
 
 Strokes, Type, Colour, Motion, Bloom, Controls and Wobble. Each lab exposes live controls for exploring its visual style. The home page provides previews; the Explore drawer lists the labs directly. Utilities includes a Blank page for recording interactions against an empty background.
@@ -32,9 +34,9 @@ npx tsc --noEmit
 
 React 19, TypeScript, Vite, Tailwind CSS v4, Radix UI, roughjs and Framer Motion. Hash routing works with static hosting.
 
-## Live site and source
+## Source and publishing
 
-Explore [Sketch Lab](https://nagbharat92.github.io/sketch-lab/) or browse the [source repository](https://github.com/nagbharat92/sketch-lab).
+Browse the [source repository](https://github.com/nagbharat92/sketch-lab).
 
 GitHub Actions builds and deploys pushes to `main` through GitHub Pages. Vite uses `/sketch-lab/` as the production base. This repository was previously named `portfolio`; its history is retained.
 
