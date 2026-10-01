@@ -7,6 +7,7 @@ import { MotionLab } from "@/components/blocks/custom/motion-lab"
 import { FlowerLab } from "@/components/blocks/custom/flower-lab"
 import { ControlsLab } from "@/components/blocks/custom/controls-lab"
 import { TextBoilLab } from "@/components/blocks/custom/text-boil-lab"
+import { SeattleLab } from "@/components/blocks/custom/seattle-lab"
 
 type CustomBlockComponent = React.ComponentType<{
   index: number
@@ -30,6 +31,7 @@ const REGISTRY: Record<string, CustomBlockComponent> = {
   'flower-lab':  FlowerLab,
   'controls-lab': ControlsLab,
   'text-boil':    TextBoilLab,
+  'seattle-lab':  SeattleLab,
 }
 
 export function CustomBlockRenderer({

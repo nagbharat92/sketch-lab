@@ -1,4 +1,5 @@
 import { FadeInUp } from "@/components/ui/fade-in-up"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 import { RoughBox } from "@/components/ui/rough-ink"
 import type { IframeBlock } from "@/data/pages"
 
@@ -17,9 +18,9 @@ export function IframeBlockRenderer({ block, index }: { block: IframeBlock; inde
         <RoughBox seed={53} className="text-muted-foreground" />
       </div>
       {block.caption && (
-        <p className="mt-(--caption-gap) text-center text-(length:--content-body-size) text-muted-foreground">
+        <JustifiedParagraph className="mt-(--caption-gap) text-center text-(length:--content-body-size) text-muted-foreground">
           {block.caption}
-        </p>
+        </JustifiedParagraph>
       )}
     </FadeInUp>
   )

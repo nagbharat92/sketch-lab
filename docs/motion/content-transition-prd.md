@@ -1,4 +1,36 @@
-# Content Loading Transition Animation — PRD
+# Page and Content Transitions
+
+## Current implementation
+
+Updated September 30, 2026. This section supersedes the historical specification below.
+
+### Page crossfade
+
+- `Canvas` uses `AnimatePresence` with simultaneous entry and exit, not `mode="wait"`.
+- Each `PageTransition` is an absolutely positioned layer with its own scrollable canvas.
+- CSS owns opacity: the normal state is `1`; `@starting-style` supplies `0` on entry; `data-present="false"` sets `0` on exit.
+- Both directions use `--duration-page` (400ms) and `--ease-in-out`. The incoming page mounts immediately rather than waiting for a blank viewport.
+- The persistent final opacity is `1`. There is no browser-animation-to-inline-style handoff that can restore an initial zero for one frame.
+- `usePresence` retains outgoing pages until their opacity transition finishes. Cancellation also completes removal. When there is no transition, including reduced-motion mode, removal is immediate.
+- Outgoing pages are inert and ignore pointer input. Rapid navigation can interrupt or reverse transitions without leaving stale pages mounted.
+
+### Content entrance
+
+`FadeInUp` retains its name and API, but animates only a 24px vertical rise over `--duration-content` (600ms) with `--ease-content` (`cubic-bezier(0.22, 1, 0.36, 1)`). Content does not also animate opacity; the page crossfade is the single visibility controller.
+
+The existing delay formula remains. Defaults are now `--stagger-base: 60ms` and `--stagger-growth: 0ms`. `animation-fill-mode: both` holds the initial and final transform.
+
+Standalone `.animate-fade-in` uses the same 600ms content timing. Within a page transition that class is disabled to avoid multiplying opacity fades.
+
+With `prefers-reduced-motion: reduce`, page crossfades and content entrance animations are disabled. Tooltip, drawer and sketchy control interactions retain their separate motion settings and reduced-motion handling.
+
+### Reason for the change
+
+The previous Framer Motion page opacity animation could briefly restore inline `opacity: 0` when its native animation finished, then set it to `1` the next frame. A CSS transition keeps its final underlying style in place and avoids that handoff. Replacing the sequential exit/entry and the separate 200px, 1.4-second content fade also removes the stop-start feeling.
+
+## Historical specification (superseded)
+
+The original design below is preserved for context. Its durations, offsets, opacity layering and sequential choreography are no longer active requirements.
 
 ## Intent
 

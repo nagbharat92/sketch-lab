@@ -3,7 +3,7 @@ import { SidebarProvider, useSidebar } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
 import { RoughMenuButton } from '@/components/ui/rough-menu-button'
 import { InkBoilFilter } from '@/components/ui/ink-boil'
-import { FolderTreeProvider } from '@/components/folder-tree'
+import { FolderTreeProvider, useFolderTree } from '@/components/folder-tree'
 import { Canvas } from '@/components/canvas'
 import { cn } from '@/lib/utils'
 import {
@@ -50,12 +50,15 @@ function App() {
  * transitions are handled inside Canvas (AnimatePresence + content FadeInUp).
  */
 function AppLayout({ setDark }: { setDark: (fn: (d: boolean) => boolean) => void }) {
+  const { selectedId } = useFolderTree()
+  const isHome = selectedId === 'home'
+
   return (
-    <SidebarProvider>
-      <AppSidebar setDark={setDark} />
+    <SidebarProvider keyboardShortcutEnabled={!isHome}>
+      {!isHome && <AppSidebar setDark={setDark} />}
 
       <div className="relative flex flex-1 min-h-0">
-        <MenuButton />
+        {!isHome && <MenuButton />}
 
         {/* Canvas — full bleed, scrolls independently */}
         <main className="flex-1 min-h-0">

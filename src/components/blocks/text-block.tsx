@@ -3,6 +3,7 @@ import remarkGfm from "remark-gfm"
 import { FadeInUp } from "@/components/ui/fade-in-up"
 import { RoughLine } from "@/components/ui/rough-ink"
 import type { TextBlock } from "@/data/pages"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 
 export function TextBlockRenderer({ block, index }: { block: TextBlock; index: number }) {
   return (
@@ -17,9 +18,9 @@ export function TextBlockRenderer({ block, index }: { block: TextBlock; index: n
           remarkPlugins={[remarkGfm]}
           components={{
             p: ({ children }) => (
-              <p className="text-(length:--content-body-size) leading-relaxed text-foreground/80 mb-(--text-gap) last:mb-0">
+              <JustifiedParagraph className="text-(length:--content-body-size) leading-relaxed text-foreground/80 mb-(--text-gap) last:mb-0">
                 {children}
-              </p>
+              </JustifiedParagraph>
             ),
             strong: ({ children }) => (
               <strong className="font-semibold text-foreground">{children}</strong>

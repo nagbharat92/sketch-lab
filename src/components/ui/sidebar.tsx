@@ -38,13 +38,14 @@ function useSidebar() {
 
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, style, children, ...props }, ref) => {
+  React.ComponentProps<"div"> & { keyboardShortcutEnabled?: boolean }
+>(({ className, style, children, keyboardShortcutEnabled = true, ...props }, ref) => {
   const [open, setOpen] = React.useState(false)
   const toggleSidebar = React.useCallback(() => setOpen((o) => !o), [])
 
   // ⌘/Ctrl+B toggles the menu drawer.
   React.useEffect(() => {
+    if (!keyboardShortcutEnabled) return
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -56,7 +57,7 @@ const SidebarProvider = React.forwardRef<
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [toggleSidebar])
+  }, [toggleSidebar, keyboardShortcutEnabled])
 
   const contextValue = React.useMemo<SidebarContextValue>(
     () => ({ open, setOpen, toggleSidebar }),

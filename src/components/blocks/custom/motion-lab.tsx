@@ -9,6 +9,7 @@ import { RoughCheckbox } from "@/components/lab/rough-checkbox"
 import { roughPathInfos, roundedPolygonPath } from "@/components/lab/rough"
 import { INK } from "@/lib/ink"
 import { cn } from "@/lib/utils"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 
 interface MotionLabProps {
   index: number
@@ -460,11 +461,11 @@ export function MotionLab({ index }: MotionLabProps) {
             <div className="pt-1">
               <RoughCheckbox label="Loop the frames" checked={loop} onChange={setLoop} seed={31} />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <JustifiedParagraph className="text-sm text-muted-foreground">
               {loop
                 ? `Cycles ${Math.round(frames)} fixed seeds, then repeats.`
                 : "A new random seed every frame — never repeats."}
-            </p>
+            </JustifiedParagraph>
           </Card>
 
           <Card title="Ink">

@@ -75,17 +75,6 @@ export const transitions = {
     duration: duration.deliberate,
     ease: ease.out,
   },
-  /** Page-level exit — whole page fades out before new page enters. */
-  pageExit: {
-    duration: duration.base,
-    ease: ease.in,
-  },
-  /** Page-level enter — container opacity fades in quickly;
-   *  block-level CSS animations handle the staggered content entrance. */
-  pageEnter: {
-    duration: duration.slow,
-    ease: ease.out,
-  },
 } as const
 
 /**
@@ -93,7 +82,7 @@ export const transitions = {
  * defined in src/index.css (fade-in-up, fade-in, delay classes).
  *
  * Framer Motion is still used for:
- *   - AnimatePresence page crossfades (canvas.tsx)
+ *   - AnimatePresence page lifetime (canvas.tsx); CSS owns the crossfade
  *   - Micro-interactions (folder-tree chevron, expand/collapse)
  *
  * See docs/motion/content-transition-prd.md for the full spec.

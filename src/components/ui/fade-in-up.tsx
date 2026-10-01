@@ -9,10 +9,10 @@ interface FadeInUpProps {
 }
 
 /**
- * FadeInUp — content entrance animation wrapper.
+ * FadeInUp — short content-rise wrapper (name retained for existing callers).
  *
- * Applies the `animate-fade-in-up` CSS animation with a computed
- * stagger delay based on the element's index `i`.
+ * Applies a transform-only entrance with a computed stagger delay based on `i`.
+ * Page-level CSS owns opacity, avoiding two fades on the same content.
  *
  * Delay formula (in CSS):
  *   delay(i) = i × --stagger-base + i×(i−1)/2 × --stagger-growth

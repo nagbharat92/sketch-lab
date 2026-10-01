@@ -6,6 +6,7 @@ import { RoughSlider } from "@/components/lab/rough-slider"
 import { ColorPicker } from "@/components/lab/color-swatch"
 import type { Swatch } from "@/components/lab/rough-tiles"
 import { RoughBox, RoughLine } from "@/components/ui/rough-ink"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 
 interface ColorLabProps {
   index: number
@@ -246,9 +247,9 @@ function ThemePreview({ p, label, seed }: { p: Palette; label: string; seed: num
           <h4 style={{ color: text, fontFamily: "var(--font-display)" }} className="text-xl leading-none">
             {night ? "After dark" : "Daylight"}
           </h4>
-          <p style={{ color: muted }} className="mt-1.5 text-sm leading-snug">
+          <JustifiedParagraph style={{ color: muted }} className="mt-1.5 text-sm leading-snug">
             Surfaces echo the page hue, one shade apart.
-          </p>
+          </JustifiedParagraph>
         </div>
 
         {/* Content grid — a profile/list tile beside an activity tile */}
@@ -469,23 +470,23 @@ export function ColorLab({ index }: ColorLabProps) {
           <Card title="Cards">
             <RoughSlider label="Shade step" value={shade} min={0} max={20} step={1} onChange={setShade} format={fmtPct} seed={21} gradient={ramp(7, (t) => ({ h: hue, s: cardS, l: clamp(light - t * 20) }))} thumbColor={css(day.card)} />
             <RoughSlider label="Hue in cards" value={tint} min={40} max={200} step={5} onChange={setTint} format={fmtPct} seed={22} gradient={ramp(7, (t) => ({ h: hue, s: clamp(sat * (40 + t * 160) / 100), l: dayCardL }))} thumbColor={css(day.card)} />
-            <p className="text-sm text-muted-foreground">
+            <JustifiedParagraph className="text-sm text-muted-foreground">
               Cards keep the page hue and step one shade toward the surface —
               darker by day, lighter at night.
-            </p>
+            </JustifiedParagraph>
           </Card>
 
           <Card title="Night (dark mode)">
             <RoughSlider label="Hue shift" value={nightShift} min={0} max={360} step={5} onChange={setNightShift} format={fmtDeg} seed={31} gradient={hueSpectrum(hue)} thumbColor={hueSwatch(hue + nightShift)} />
             <RoughSlider label="Saturation" value={nightSat} min={0} max={100} step={1} onChange={setNightSat} format={fmtPct} seed={32} gradient={ramp(7, (t) => ({ h: nightHue, s: t * 100, l: 52 }))} thumbColor={css({ h: nightHue, s: nightSat, l: 52 })} />
             <RoughSlider label="Lightness" value={nightLight} min={5} max={24} step={1} onChange={setNightLight} format={fmtPct} seed={33} gradient={ramp(7, (t) => ({ h: nightHue, s: nightVisS, l: 5 + t * 19 }))} thumbColor={css({ h: nightHue, s: nightVisS, l: nightLight })} />
-            <p className="text-sm text-muted-foreground">
+            <JustifiedParagraph className="text-sm text-muted-foreground">
               Night turns the day hue through the wheel. At{" "}
               <strong className="font-semibold text-foreground">180°</strong> it lands on the exact
               complement — this day reads as a{" "}
               <strong className="font-semibold text-foreground">{nightHueName}</strong> night. Dial
               toward 210–260° for a violet cast.
-            </p>
+            </JustifiedParagraph>
           </Card>
         </div>
       </FadeInUp>

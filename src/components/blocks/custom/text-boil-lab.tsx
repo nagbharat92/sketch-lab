@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { TEXT_BOIL } from "@/lib/text-boil"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 
 interface TextBoilLabProps {
   index: number
@@ -279,13 +280,13 @@ export function TextBoilLab({ index }: TextBoilLabProps) {
 
             {/* Paragraph — the real use case: an inline link + a tooltip term. */}
             <div className="flex max-w-md flex-col items-center gap-3">
-              <p className="text-(length:--content-body-size) leading-relaxed text-foreground">
+              <JustifiedParagraph className="text-(length:--content-body-size) leading-relaxed text-foreground">
                 Roughened ink brings letters to life. Hover{" "}
                 <HoverBoilLink filterId={filterId}>this link</HoverBoilLink> to feel it
                 boil, or rest on{" "}
                 <BoilTooltip>this term</BoilTooltip> to pop a tooltip
                 that wobbles too.
-              </p>
+              </JustifiedParagraph>
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Hover a link · tooltip
               </span>
@@ -310,11 +311,11 @@ export function TextBoilLab({ index }: TextBoilLabProps) {
               <div className="pt-1">
                 <RoughCheckbox label="Rougher noise" checked={rougher} onChange={setRougher} seed={41} />
               </div>
-              <p className="text-sm text-muted-foreground">
+              <JustifiedParagraph className="text-sm text-muted-foreground">
                 {animate
                   ? "The noise reseeds every frame, so the ink boils."
                   : "A single static seed — hand-inked, but held still."}
-              </p>
+              </JustifiedParagraph>
             </Card>
           </div>
         </FadeInUp>

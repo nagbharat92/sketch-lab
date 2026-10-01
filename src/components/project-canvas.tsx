@@ -47,6 +47,7 @@ export function ProjectCanvas({ page }: ProjectCanvasProps) {
               (block.type === 'custom' &&
                 (block.componentId === 'lab-home' ||
                  block.componentId === 'folder-lab' ||
+                 block.componentId === 'seattle-lab' ||
                 block.componentId === 'type-lab' ||
                 block.componentId === 'color-lab' ||
                 block.componentId === 'motion-lab' ||

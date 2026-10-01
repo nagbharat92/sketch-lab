@@ -9,6 +9,7 @@ import { RoughCheckbox } from "@/components/lab/rough-checkbox"
 import { SWATCHES } from "@/components/lab/rough-tiles"
 import { ColorPicker } from "@/components/lab/color-swatch"
 import { INK } from "@/lib/ink"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 
 interface FolderLabProps {
   index: number
@@ -299,9 +300,9 @@ export function FolderLab({ index }: FolderLabProps) {
         </FadeInUp>
 
         <FadeInUp i={index + 6}>
-          <p className="pt-2 text-center text-sm text-muted-foreground">
+          <JustifiedParagraph className="pt-2 text-center text-sm text-muted-foreground">
             Hover the folder to see it open. Every control redraws the real roughjs sketch.
-          </p>
+          </JustifiedParagraph>
         </FadeInUp>
       </div>
     </div>

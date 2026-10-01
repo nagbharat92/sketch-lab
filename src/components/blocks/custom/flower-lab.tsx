@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react"
 import type { CSSProperties, ReactNode } from "react"
 import { RotateCcw, Shuffle } from "lucide-react"
 import { FadeInUp } from "@/components/ui/fade-in-up"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 import { CornerFrame } from "@/components/ui/corner-frame"
 import { RoughSlider } from "@/components/lab/rough-slider"
 import { SwatchGrid, type Swatch } from "@/components/lab/rough-tiles"
@@ -173,10 +174,10 @@ export function FlowerLab({ index }: FlowerLabProps) {
           {/* The colour picker — the selected chip blooms and colours the flower above */}
           <div className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">In the swatches</h3>
-            <p className="text-sm text-muted-foreground">
+            <JustifiedParagraph className="text-sm text-muted-foreground">
               Pick a colour — the selected chip blooms in it, and the flower above takes the same colour. Every pick
               re-rolls a fresh shape.
-            </p>
+            </JustifiedParagraph>
             <SwatchRow selectedIndex={colorIndex} shape={shape} centerHoleRatio={centerHole} onSelect={pickColor} />
           </div>
         </div>

@@ -5,16 +5,19 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { FolderTree, useFolderTree, useSidebarNavigate } from "@/components/folder-tree"
 import { RoughBox } from "@/components/ui/rough-ink"
+import { SeattleSignature } from "@/components/seattle-signature"
 import { cn } from "@/lib/utils"
 
-const linkClasses = "ink-boil font-bold text-sidebar-foreground underline-offset-4 hover:underline inline-flex items-baseline gap-1"
+const linkClasses = "ink-boil inline-flex items-baseline gap-1 rounded text-sidebar-foreground/70 underline-offset-4 hover:text-sidebar-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
 
 export function AppSidebar({ setDark }: { setDark: (fn: (d: boolean) => boolean) => void }) {
   const { selectedId } = useFolderTree()
   const navigate = useSidebarNavigate()
+  const { open } = useSidebar()
   return (
     <Sidebar>
       <SidebarHeader className="p-(--sidebar-content-padding) pb-(--sidebar-section-gap)">
@@ -39,25 +42,21 @@ export function AppSidebar({ setDark }: { setDark: (fn: (d: boolean) => boolean)
 
       <SidebarSeparator boil bowing={1} />
 
-      <SidebarFooter className="p-(--sidebar-footer-padding)">
-        <p className="text-sm text-sidebar-foreground/70">
-          By Bharat Nag
-        </p>
-        <p className="text-sm text-sidebar-foreground/70">
+      <SidebarFooter className="max-h-[55%] shrink-0 gap-3 overflow-y-auto px-4 pt-4 pb-10">
+        <SeattleSignature animated={open} compact />
+        <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
           <a href="https://github.com/nagbharat92/sketch-lab" target="_blank" rel="noopener noreferrer" className={linkClasses}>
             View source
           </a>
-        </p>
-        <p className="text-sm text-sidebar-foreground/70">
-          Shift the{" "}
+          <span aria-hidden="true" className="text-sidebar-foreground/40">·</span>
           <button
             onClick={() => setDark((d) => !d)}
+            aria-label="Toggle light and dark theme"
             className={`${linkClasses} cursor-pointer`}
           >
-            light
+            Shift the light
           </button>
-          {" "}to match your mood.
-        </p>
+        </div>
       </SidebarFooter>
 
       {/* Hand-drawn sketchy outline framing the whole sidebar (replaces the

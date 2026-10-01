@@ -1,4 +1,5 @@
 import { FadeInUp } from "@/components/ui/fade-in-up"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 import type { VideoBlock } from "@/data/pages"
 
 export function VideoBlockRenderer({ block, index }: { block: VideoBlock; index: number }) {
@@ -15,9 +16,9 @@ export function VideoBlockRenderer({ block, index }: { block: VideoBlock; index:
         />
       </div>
       {block.caption && (
-        <p className="mt-(--caption-gap) text-center text-(length:--content-body-size) text-muted-foreground">
+        <JustifiedParagraph className="mt-(--caption-gap) text-center text-(length:--content-body-size) text-muted-foreground">
           {block.caption}
-        </p>
+        </JustifiedParagraph>
       )}
     </FadeInUp>
   )

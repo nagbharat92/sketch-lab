@@ -9,6 +9,7 @@ import { RoughCheckbox } from "@/components/lab/rough-checkbox"
 import { FontCombobox } from "@/components/lab/font-combobox"
 import { GOOGLE_FONTS } from "@/data/google-fonts"
 import { cn } from "@/lib/utils"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 
 interface TypeLabProps {
   index: number
@@ -428,28 +429,28 @@ export function TypeLab({ index }: TypeLabProps) {
           <CornerFrame />
           <div style={{ maxWidth: "var(--type-measure)" }} className="mx-auto w-full">
             {/* Pairing meta — the two faces being tested */}
-            <p className="mb-8 font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <JustifiedParagraph justify={false} className="mb-8 font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Headings · {(headingsUseBody ? bodyFamily : displayFamily) || "—"}
               <span className="px-2 text-muted-foreground/50">/</span>
               Body · {bodyFamily || "—"}
-            </p>
+            </JustifiedParagraph>
 
             <h1 style={heading("2.5rem")} className="text-foreground">
               Pairing type with intent
             </h1>
 
-            <p
+            <JustifiedParagraph
               style={{ ...bodyStyle, fontSize: "calc(var(--type-body-size) * 1.2)" }}
               className="mt-4 text-muted-foreground"
             >
               A pairing works when the display and body faces disagree just enough —
               contrast to signal hierarchy, harmony to read as one voice.
-            </p>
+            </JustifiedParagraph>
 
             <h2 style={heading("1.5rem")} className="mt-8 text-foreground">
               Reading at length
             </h2>
-            <p style={bodyStyle} className="mt-3 text-foreground/80">
+            <JustifiedParagraph style={bodyStyle} className="mt-3 text-foreground/80">
               Body copy at the reading size — judge it by the paragraph, not the
               letter. Emphasis stays calm: a{" "}
               <strong className="font-semibold text-foreground">bold phrase</strong>,
@@ -465,7 +466,7 @@ export function TypeLab({ index }: TypeLabProps) {
                 inline code
               </code>{" "}
               sitting comfortably on the line.
-            </p>
+            </JustifiedParagraph>
           </div>
         </div>
       </FadeInUp>
@@ -496,10 +497,10 @@ export function TypeLab({ index }: TypeLabProps) {
           </Card>
 
           <Card title="Why it works">
-            <p className="text-sm leading-relaxed text-foreground/80">
+            <JustifiedParagraph className="text-sm leading-relaxed text-foreground/80">
               <span className="font-semibold text-foreground">{activeName}. </span>
               {whyText}
-            </p>
+            </JustifiedParagraph>
           </Card>
 
           <Card title="Body">

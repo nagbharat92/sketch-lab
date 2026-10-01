@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { ColorPicker } from "@/components/lab/color-swatch"
 import { SWATCHES } from "@/components/lab/rough-tiles"
+import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
 
 interface ControlsLabProps {
   index: number
@@ -176,7 +177,7 @@ export function ControlsLab({ index }: ControlsLabProps) {
             </a>
           ))}
         </div>
-        <p className="text-sm text-muted-foreground">
+        <JustifiedParagraph className="text-sm text-muted-foreground">
           An{" "}
           <a
             href="#"
@@ -186,7 +187,7 @@ export function ControlsLab({ index }: ControlsLabProps) {
             inline link
           </a>{" "}
           inside prose.
-        </p>
+        </JustifiedParagraph>
       </Section>
 
       <Section title="Buttons">
@@ -219,10 +220,10 @@ export function ControlsLab({ index }: ControlsLabProps) {
       <FadeInUp i={index}>
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-semibold text-foreground">Controls</h2>
-          <p className="max-w-2xl text-sm text-muted-foreground">
+          <JustifiedParagraph className="max-w-2xl text-sm text-muted-foreground">
             Every control on a light and a dark background, side by side. Tweak once and check both
             themes at a glance — the panels share state and stay independent of the page theme.
-          </p>
+          </JustifiedParagraph>
         </div>
       </FadeInUp>
 

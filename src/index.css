@@ -190,12 +190,9 @@
   --duration-measured:   500ms;
   --duration-deliberate: 1000ms;
 
-  /* Page transition durations
-     page-exit:  base  (200ms) — snappy fade-out of the outgoing page
-     page-enter: slow  (300ms) — quick fade-in for the incoming page container
-                         (content blocks handle their own staggered entrance) */
-  --duration-page-exit:  var(--duration-base);
-  --duration-page-enter: var(--duration-slow);
+  /* Both sides of the page crossfade share one duration. */
+  --duration-page: 400ms;
+  --duration-content: 600ms;
 
   /* Easing — explicit cubic-bezier values to ensure CSS/JS parity
      ease-out:    things arriving/decelerating — most common
@@ -206,6 +203,7 @@
   --ease-in:     cubic-bezier(0.4, 0, 1, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-content: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* =============================================================================
@@ -347,8 +345,8 @@
 }
 
 /* =============================================================================
-   CONTENT ENTRANCE ANIMATIONS
-   Fade-in-up for content elements, flat fade for containers.
+   PAGE AND CONTENT ENTRANCE ANIMATIONS
+   One page-level crossfade, with a short transform-only rise for content.
    Stagger via two tokens: --stagger-base and --stagger-growth.
    Each element sets --i (its index) and the delay is computed via calc().
 
@@ -359,21 +357,71 @@
      Tighter wave   → lower --stagger-base  (try 60ms)
      More decel     → raise --stagger-growth (try 20ms)
      Uniform gaps   → set --stagger-growth: 0ms
-     Easing: expo-out — fast arrival, long soft tail.
+     Easing: expo-out — fast arrival, soft settle.
    ============================================================================= */
 
+.justice-paragraph {
+  text-wrap: pretty;
+}
+
+.justice-paragraph[data-justice="justified"] {
+  font-kerning: none;
+  font-variant-ligatures: none;
+}
+
+.justice-paragraph[data-justice="native-unfit"] {
+  overflow-wrap: anywhere;
+}
+
+.justice-line {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  white-space: nowrap;
+  text-wrap: nowrap;
+}
+
+.justice-probe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: max-content;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: pre;
+  text-wrap: nowrap;
+  font-kerning: none;
+  font-variant-ligatures: none;
+}
+
 :root {
-  --stagger-base:   100ms;
-  --stagger-growth:  10ms;
+  --stagger-base:   60ms;
+  --stagger-growth:  0ms;
+}
+
+.page-transition {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  transition: opacity var(--duration-page) var(--ease-in-out);
+}
+
+@starting-style {
+  .page-transition {
+    opacity: 0;
+  }
+}
+
+.page-transition[data-present="false"] {
+  opacity: 0;
+  pointer-events: none;
 }
 
 @keyframes fade-in-up {
   from {
-    opacity: 0;
-    transform: translateY(200px);
+    transform: translateY(24px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
@@ -385,14 +433,29 @@
 
 .animate-fade-in-up {
   --i: 0;
-  animation: fade-in-up 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-in-up var(--duration-content) var(--ease-content) both;
   animation-delay: calc(var(--i) * var(--stagger-base) + var(--i) * (var(--i) - 1) / 2 * var(--stagger-growth));
 }
 
 .animate-fade-in {
   --i: 0;
-  animation: fade-in 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-in var(--duration-content) var(--ease-content) both;
   animation-delay: calc(var(--i) * var(--stagger-base) + var(--i) * (var(--i) - 1) / 2 * var(--stagger-growth));
+}
+
+.page-transition .animate-fade-in {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    transition: none;
+  }
+
+  .animate-fade-in-up,
+  .animate-fade-in {
+    animation: none;
+  }
 }
 
 /* Selected-swatch bloom — rotates slowly and endlessly to signal selection
@@ -404,6 +467,65 @@
 .animate-bloom-spin {
   transform-origin: 50% 50%;
   animation: bloom-spin 16s linear infinite;
+}
+
+@keyframes seattle-rain-fall {
+  0% { transform: translate(12px, -24px); opacity: 0; }
+  12% { opacity: var(--rain-opacity); }
+  84% { opacity: var(--rain-opacity); }
+  92%, 100% { transform: translate(-20px, var(--rain-end-y)); opacity: 0; }
+}
+
+@keyframes seattle-rain-splash {
+  0%, 92% { transform: scale(0.3, 0.5); opacity: 0; }
+  96% { opacity: 0.4; }
+  100% { transform: scale(1.7, 0.8); opacity: 0; }
+}
+
+.seattle-rain-drop {
+  animation: seattle-rain-fall 2s linear infinite;
+}
+
+.seattle-rain-splash {
+  animation: seattle-rain-splash 2s linear infinite;
+}
+
+@keyframes seattle-heart-beat {
+  0%, 48%, 100% { transform: scale(1); }
+  12% { transform: scale(1.12); }
+  24% { transform: scale(1); }
+  36% { transform: scale(1.06); }
+}
+
+.seattle-love-heart {
+  transform-origin: center;
+  animation: seattle-heart-beat 2.8s ease-in-out infinite;
+}
+
+.seattle-love-heart[data-animated="false"] {
+  animation-play-state: paused;
+}
+
+.seattle-sketch[data-raining="false"] .seattle-rain-drop,
+.seattle-sketch[data-raining="false"] .seattle-rain-splash {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seattle-love-heart {
+    animation: none;
+  }
+
+  .seattle-rain-drop {
+    animation: none;
+    opacity: 0;
+  }
+
+  .seattle-rain-splash {
+    animation: none;
+    opacity: 0;
+  }
+
 }
 
 /* Tooltip entrance — a small, springy "pop" that grows from the trigger,
