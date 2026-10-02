@@ -6,7 +6,7 @@ Try Sketch Lab: [https://nagbharat92.github.io/sketch-lab/](https://nagbharat92.
 
 ## Labs
 
-Strokes, Type, Colour, Motion, Bloom, Controls, Wobble and Seattle. Each lab exposes live controls for exploring its visual style. The home page has a centered introduction and lab previews, without an Explore menu. The Explore drawer is available within the labs and on Blank for recording interactions against an empty background.
+Strokes, Type, Colour, Motion, Bloom, Controls, Wobble and Seattle. Each lab exposes live controls for exploring its visual style. The home page has a centered introduction and lab previews, without an Explore menu. Within the labs, the Explore drawer provides illustrated navigation and short descriptions.
 
 Seattle explores a personal signature: a rough-drawn Space Needle cycling through ink seeds, a quiet static skyline, and animated drizzle with tiny splashes. Its compact version appears in the drawer with a red heart credit, X/GitHub profile links and source/theme controls. Animation respects reduced motion; the drawer signature runs only while open.
 

@@ -38,7 +38,7 @@ function App() {
           hover (see the INK BOIL block in index.css). Rendered once here so the
           hand-drawn "boil" comes for free to any <a> site-wide. */}
       <InkBoilFilter />
-      <AppLayout setDark={setDark} />
+      <AppLayout dark={dark} setDark={setDark} />
     </FolderTreeProvider>
   )
 }
@@ -49,13 +49,13 @@ function App() {
  * Every route, including the merged Home landing page, renders here. Page-to-page
  * transitions are handled inside Canvas (AnimatePresence + content FadeInUp).
  */
-function AppLayout({ setDark }: { setDark: (fn: (d: boolean) => boolean) => void }) {
+function AppLayout({ dark, setDark }: { dark: boolean; setDark: (fn: (d: boolean) => boolean) => void }) {
   const { selectedId } = useFolderTree()
   const isHome = selectedId === 'home'
 
   return (
     <SidebarProvider keyboardShortcutEnabled={!isHome}>
-      {!isHome && <AppSidebar setDark={setDark} />}
+      {!isHome && <AppSidebar dark={dark} setDark={setDark} />}
 
       <div className="relative flex flex-1 min-h-0">
         {!isHome && <MenuButton />}

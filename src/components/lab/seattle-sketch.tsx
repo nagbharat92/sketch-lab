@@ -72,10 +72,11 @@ interface SeattleSketchProps {
   raining?: boolean
   speed?: number
   className?: string
+  tightFrame?: boolean
 }
 
 /** Only the Needle cycles ink seeds; skyline and rain paths stay fixed. */
-export function SeattleSketch({ raining = true, speed = 1, className }: SeattleSketchProps) {
+export function SeattleSketch({ raining = true, speed = 1, className, tightFrame = false }: SeattleSketchProps) {
   const clipId = `seattle-rain-${useId().replace(/:/g, "")}`
   const needleSeed = useBoilSeed(81, raining)
   const needlePaths = useMemo(
@@ -88,7 +89,7 @@ export function SeattleSketch({ raining = true, speed = 1, className }: SeattleS
   )
   return (
     <svg
-      viewBox="0 0 320 240"
+      viewBox={tightFrame ? "28 28 264 204" : "0 0 320 240"}
       aria-hidden="true"
       className={cn("seattle-sketch block w-full text-foreground", className)}
       data-raining={raining}

@@ -183,19 +183,6 @@ export const sidebarData: SidebarNode[] = [
 
   ...contentTree,
 
-  {
-    id: 'utilities',
-    type: 'folder',
-    name: 'Utilities',
-    children: [
-      {
-        id: 'blank',
-        type: 'page',
-        name: 'Blank',
-        blocks: [],
-      },
-    ],
-  },
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

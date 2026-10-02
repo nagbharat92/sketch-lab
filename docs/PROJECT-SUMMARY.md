@@ -9,10 +9,9 @@ A collection of interactive experiments in hand-drawn interfaces, by Bharat Nag.
 ## Current experience
 
 - Home: a centered introduction and eight visual previews linking to the labs, with no Explore menu.
-- Explore: available on lab pages and Blank, with flat lab navigation followed by Utilities.
+- Explore: available on lab pages. A Bloom-branded Sketch Lab header introduces the project; illustrated lab rows include short descriptions and animate only the selected preview.
 - Labs: Strokes, Type, Colour, Motion, Bloom, Controls, Wobble and Seattle.
-- Blank: an empty canvas for zoomed-in recordings of the Explore button and tooltip.
-- Credits: Home and the Seattle lab share the Seattle signature: animated Needle and drizzle, static skyline, a red heart credit and inline X/GitHub profile links. The drawer uses a compact version with stacked profile links, followed by source and theme controls; it animates only while the drawer is open.
+- Credits: Home and the Seattle lab share the Seattle signature: animated Needle and drizzle, static skyline, a red heart credit and inline X/GitHub profile links. The drawer uses a 96px tightly framed illustration on the left, a single-line heart credit and centered X/GitHub/theme icons with tooltips. The theme icon switches between moon and sun. Drawer header/footer use matching 20px vertical padding; animation runs only while open. Home retains the project source link.
 - Identity: Sketch Lab browser title, description and a sketchy Bloom favicon.
 
 The personal biography, social-links row, email-copy interaction and Browser Notifications case study have been removed. Historical portfolio documents are under `docs/archive/`.
@@ -23,7 +22,7 @@ React 19 and TypeScript with Vite, Tailwind CSS v4, Radix UI, roughjs and Framer
 
 - `plugins/content-plugin.js` turns Markdown entries into the `virtual:content-pages` module.
 - `src/data/content/` contains the eight lab entries, with stable page IDs and explicit ordering.
-- `src/data/pages.ts` composes Home, generated lab pages and Utilities into navigation data.
+- `src/data/pages.ts` composes Home and generated lab pages into navigation data.
 - `FolderTreeProvider` owns hash-based page selection; the Explore drawer closes on navigation.
 - `Canvas` and `ProjectCanvas` render typed content blocks. Pages use a 400ms CSS crossfade, with a gentle 600ms transform-only content entrance; Framer Motion only manages outgoing page lifetime.
 - `LabHome` builds previews from the generated lab list. Custom blocks register the interactive labs.
@@ -35,7 +34,7 @@ React 19 and TypeScript with Vite, Tailwind CSS v4, Radix UI, roughjs and Framer
 
 Local folder: `/Users/bharatnag/Documents/SideProjects/sketch-lab`.
 
-Run `npm run dev` and open `http://localhost:5190/`. Blank is at `#/blank`. The development server uses a strict port and hot reload.
+Run `npm run dev` and open `http://localhost:5190/`. The development server uses a strict port and hot reload.
 
 Existing validation commands: `npm run build`, `npm run lint`, and `npx tsc --noEmit`.
 

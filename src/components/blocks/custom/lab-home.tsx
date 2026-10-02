@@ -3,12 +3,11 @@ import { ArrowUpRight } from "lucide-react"
 import { labPages, type PageNode } from "@/data/pages"
 import { Bloom } from "@/components/lab/color-swatch"
 import { SeattleSignature } from "@/components/seattle-signature"
-import { circlePaths, linePaths, roughPathInfos, roundedPolygonPath, ROUGH_OPTIONS } from "@/components/lab/rough"
+import { LabPreview } from "@/components/lab/lab-preview"
 import { FadeInUp } from "@/components/ui/fade-in-up"
 import { RoughBox, RoughLine } from "@/components/ui/rough-ink"
 import { DEFAULT_BLOOM } from "@/lib/bloom"
 import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
-import { SeattleSketch } from "@/components/lab/seattle-sketch"
 
 const DESCRIPTIONS: Record<string, string> = {
   "folder-lab": "Find the character in a line. Tune ink, shape and perspective.",
@@ -19,71 +18,6 @@ const DESCRIPTIONS: Record<string, string> = {
   "text-boil": "Give letters a little life with a hand-drawn wobble.",
   controls: "Sliders, checks and buttons, with the same ink in both themes.",
   seattle: "A little Space Needle, a little rain. A sketch for a personal signature.",
-}
-
-const folderPaths = roughPathInfos(
-  roundedPolygonPath([
-    { x: 12, y: 18 }, { x: 48, y: 18 }, { x: 62, y: 34 },
-    { x: 124, y: 34 }, { x: 124, y: 94 }, { x: 12, y: 94 },
-  ], 8),
-  { ...ROUGH_OPTIONS, seed: 7, fill: "none", stroke: "currentColor" },
-)
-const controlPaths = [
-  ...linePaths(14, 38, 126, 38, 41),
-  ...circlePaths(82, 38, 20, 42),
-  ...linePaths(46, 77, 88, 77, 43),
-]
-
-function LabPreview({ id, active }: { id: string; active: boolean }) {
-  switch (id) {
-    case "seattle":
-      return <SeattleSketch raining={active} className="w-40 [--lab-surface:var(--surface-raised)]" />
-    case "folder-lab":
-      return (
-        <svg width="136" height="108" viewBox="0 0 136 108">
-          <g fill="none" stroke="currentColor" strokeWidth={ROUGH_OPTIONS.strokeWidth} strokeLinecap="round">
-            {folderPaths.map((path, i) => <path key={i} d={path.d} />)}
-          </g>
-        </svg>
-      )
-    case "type-pairing":
-      return (
-        <div className="flex items-baseline gap-2">
-          <span className="font-display text-6xl">Aa</span>
-          <span className="text-4xl text-muted-foreground">Bb</span>
-        </div>
-      )
-    case "backgrounds":
-      return (
-        <div className="flex gap-3">
-          {["var(--accent-yellow)", "var(--accent-blue)", "var(--accent-green)"].map((color, i) => (
-            <div key={color} style={{ backgroundColor: color }} className="relative size-12 rounded-lg">
-              <RoughBox seed={51 + i} />
-            </div>
-          ))}
-        </div>
-      )
-    case "motion":
-      return (
-        <div className="flex w-32 flex-col gap-3">
-          {[61, 62, 63].map((seed) => <RoughLine key={seed} seed={seed} boil={active} bowing={2} />)}
-        </div>
-      )
-    case "flower-lab":
-      return <Bloom size={112} radius={46} shape={DEFAULT_BLOOM} fill="var(--accent-primary)" seed={7} centerHole spin={active} />
-    case "text-boil":
-      return <span className={`${active ? "ink-boil-on " : ""}text-4xl font-bold`}>Hello.</span>
-    case "controls":
-      return (
-        <svg width="140" height="108" viewBox="0 0 140 108">
-          <g fill="none" stroke="currentColor" strokeWidth={ROUGH_OPTIONS.strokeWidth} strokeLinecap="round">
-            {controlPaths.map((d, i) => <path key={i} d={d} />)}
-          </g>
-        </svg>
-      )
-    default:
-      return <RoughLine className="w-32" />
-  }
 }
 
 function LabCard({ page, index }: { page: PageNode; index: number }) {

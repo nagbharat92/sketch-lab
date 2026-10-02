@@ -6,7 +6,8 @@ import {
   useContext,
   type ReactNode,
 } from "react"
-import { FolderOpen, File } from "lucide-react"
+import { File } from "lucide-react"
+import { LabPreview } from "@/components/lab/lab-preview"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/components/ui/sidebar"
 import {
@@ -15,6 +16,17 @@ import {
   sidebarData,
   findPage,
 } from "@/data/pages"
+
+const LAB_HINTS: Record<string, string> = {
+  "folder-lab": "Shape the ink",
+  "type-pairing": "Pair type with intent",
+  backgrounds: "Find your palette",
+  motion: "Find its rhythm",
+  "flower-lab": "Make colours bloom",
+  "text-boil": "Bring letters to life",
+  controls: "Play with the details",
+  seattle: "A little personal signature",
+}
 
 // ─── Depth padding ────────────────────────────────────────────────────────────
 // Computed from spacing tokens: base indent + depth × step.
@@ -33,6 +45,7 @@ function FolderItem({
   selectedId: string | null
   select: (id: string) => void
 }) {
+  const { open } = useSidebar()
   const indentStyle = {
     paddingLeft: `calc(var(--tree-indent-base) + ${depth} * var(--tree-indent-step))`,
   }
@@ -43,10 +56,9 @@ function FolderItem({
     return (
       <li>
         <div
-          className="flex w-full items-center gap-(--tree-item-gap) rounded-md px-(--tree-item-px) py-(--tree-item-py) text-sm text-sidebar-foreground"
+          className="mt-4 mb-1 flex w-full items-center gap-2 px-(--tree-item-px) py-1 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50"
           style={indentStyle}
         >
-          <FolderOpen className="size-4 shrink-0 text-sidebar-foreground/70" />
           <span className="truncate">{node.name}</span>
         </div>
 
@@ -68,13 +80,15 @@ function FolderItem({
   // Pages are the interactive leaves.
   const isSelected = selectedId === node.id
   const PageIcon = node.icon ?? File
+  const hint = LAB_HINTS[node.id]
 
   return (
     <li>
       <button
         onClick={() => select(node.id)}
+        aria-current={isSelected ? "page" : undefined}
         className={cn(
-          "ink-boil-parent flex w-full items-center gap-(--tree-item-gap) rounded-md px-(--tree-item-px) py-(--tree-item-py) text-sm text-sidebar-foreground",
+          "flex w-full items-center gap-3 rounded-md px-(--tree-item-px) py-2 text-left text-sm text-sidebar-foreground",
           "transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
           "outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
           "cursor-pointer",
@@ -82,8 +96,22 @@ function FolderItem({
         )}
         style={indentStyle}
       >
-        <PageIcon className="size-4 shrink-0 text-sidebar-foreground/70" />
-        <span className="ink-boil truncate">{node.name}</span>
+        {hint ? (
+          <>
+            <span aria-hidden="true" className="flex h-9 w-11 shrink-0 items-center justify-center">
+              <LabPreview id={node.id} active={isSelected && open} compact />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-semibold">{node.name}</span>
+              <span className="mt-0.5 block text-xs text-sidebar-foreground/60">{hint}</span>
+            </span>
+          </>
+        ) : (
+          <>
+            <PageIcon className="size-4 shrink-0 text-sidebar-foreground/50" />
+            <span className="truncate text-sidebar-foreground/70">{node.name}</span>
+          </>
+        )}
       </button>
     </li>
   )
