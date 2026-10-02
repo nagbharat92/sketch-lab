@@ -47,11 +47,11 @@ export const DEFAULT_BLOOM: BloomShape = { petals: 6, bulge: 0.4, round: 1.2 }
 /** Pick a preset INDEX at random, never returning `exclude` — so consecutive
  *  rolls always change the shape. The shift-past-excluded trick keeps a uniform
  *  distribution over the remaining presets. Call only from event handlers. */
-export function randomBloomIndex(exclude: number): number {
+export function randomBloomIndex(exclude: number, random = Math.random): number {
   const n = BLOOM_PRESETS.length
   if (n <= 1) return 0
-  if (exclude < 0 || exclude >= n) return Math.floor(Math.random() * n)
-  let i = Math.floor(Math.random() * (n - 1))
+  if (exclude < 0 || exclude >= n) return Math.floor(random() * n)
+  let i = Math.floor(random() * (n - 1))
   if (i >= exclude) i++ // skip the excluded slot
   return i
 }

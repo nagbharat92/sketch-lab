@@ -18,11 +18,12 @@ import {
 } from "@/data/pages"
 
 const LAB_HINTS: Record<string, string> = {
+  home: "Explore all experiments",
   "folder-lab": "Shape the ink",
   "type-pairing": "Pair type with intent",
   backgrounds: "Find your palette",
   motion: "Find its rhythm",
-  "flower-lab": "Make colours bloom",
+  "flower-lab": "Grow a hand-drawn garden",
   "text-boil": "Bring letters to life",
   controls: "Play with the details",
   seattle: "A little personal signature",
@@ -211,18 +212,15 @@ export function FolderTree() {
 
   return (
     <ul className="flex flex-col gap-0.5">
-      {/* 'home' is surfaced by the sidebar header "Home" control, not the tree. */}
-      {sidebarData
-        .filter((node) => node.id !== 'home')
-        .map((node) => (
-          <FolderItem
-            key={node.id}
-            node={node}
-            depth={0}
-            selectedId={selectedId}
-            select={navigate}
-          />
-        ))}
+      {sidebarData.map((node) => (
+        <FolderItem
+          key={node.id}
+          node={node}
+          depth={0}
+          selectedId={selectedId}
+          select={navigate}
+        />
+      ))}
     </ul>
   )
 }

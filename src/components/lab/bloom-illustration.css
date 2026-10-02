@@ -1,0 +1,389 @@
+@media (hover: hover) and (pointer: fine) {
+  body:has(.page-transition[data-page="flower-lab"][data-present="true"]),
+  body:has(.page-transition[data-page="flower-lab"][data-present="true"]) * {
+    cursor: url("./bloom-leaf-cursor.svg") 5 3, auto;
+  }
+}
+
+.bloom-page {
+  --bloom-page-gap: 4rem;
+  --bloom-copy-column: 0.72fr;
+  --bloom-art-column: 1.28fr;
+  --bloom-column-gap: clamp(3.5rem, 5vw, 5rem);
+  --bloom-story-size: 1.125rem;
+  --bloom-story-leading: 1.7;
+  --bloom-paragraph-gap: 1.25rem;
+  --bloom-drop-cap-width: 2.5em;
+  --bloom-drop-cap-height: 3.4em;
+  --bloom-drop-cap-size: 3.8em;
+  --bloom-button-gap: 0.75rem;
+  --bloom-button-height: 3.75rem;
+  --bloom-button-padding: 1rem 1.5rem;
+  --bloom-button-radius: 9999px;
+  --bloom-button-size: 1rem;
+  --bloom-button-weight: 600;
+  --bloom-button-leading: 1.5;
+  --bloom-button-margin: 2rem;
+  --bloom-focus-width: 2px;
+  --bloom-focus-offset: 5px;
+  --bloom-art-max-width: 680px;
+  --bloom-window-clearance: 3rem;
+  --bloom-editorial-optical-offset: 2rem;
+  display: grid;
+  gap: var(--bloom-page-gap);
+}
+
+.bloom-editorial {
+  min-width: 0;
+}
+
+.bloom-story {
+  position: relative;
+  display: flow-root;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--bloom-story-size);
+  line-height: var(--bloom-story-leading);
+  color: var(--text);
+}
+
+.bloom-story .justice-drop-cap {
+  float: left;
+  position: relative;
+  width: var(--bloom-drop-cap-width);
+  height: var(--bloom-drop-cap-height);
+  font-family: var(--font-display);
+}
+
+.bloom-story .justice-drop-cap > span {
+  position: absolute;
+  font-size: var(--bloom-drop-cap-size);
+  line-height: 1;
+}
+
+.bloom-story .justice-drop-cap > .sr-only {
+  font-size: inherit;
+}
+
+.bloom-story .justice-drop-cap svg {
+  display: block;
+}
+
+.bloom-story[data-justice="justified"] .justice-drop-cap {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.bloom-story + .bloom-story {
+  margin-top: var(--bloom-paragraph-gap);
+}
+
+.bloom-surprise {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bloom-button-gap);
+  width: 100%;
+  min-height: var(--bloom-button-height);
+  padding: var(--bloom-button-padding);
+  margin-top: var(--bloom-button-margin);
+  border-radius: var(--bloom-button-radius);
+  font-family: var(--font-sans);
+  font-size: var(--bloom-button-size);
+  font-weight: var(--bloom-button-weight);
+  line-height: var(--bloom-button-leading);
+  cursor: pointer;
+}
+
+.bloom-surprise:focus-visible {
+  outline: var(--bloom-focus-width) solid var(--text);
+  outline-offset: var(--bloom-focus-offset);
+}
+
+.bloom-art-column {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  width: 100%;
+  max-width: var(--bloom-art-max-width);
+  justify-self: center;
+}
+
+.bloom-artwork {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--bloom-art-max-width);
+  margin: 0;
+}
+
+@property --bloom-gust {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+.bloom-illustration {
+  --bloom-breeze: 1;
+  --bloom-flex: 1;
+  --bloom-gust-rest: 0.85;
+  --bloom-gust-peak: 1.25;
+  --bloom-gust-settle: 1;
+  --bloom-plant-sway-start: -1deg;
+  --bloom-plant-sway-end: 1.2deg;
+  --bloom-flower-nod-start: 1.5deg;
+  --bloom-flower-nod-end: -1.5deg;
+  --bloom-small-sway-start: 1.5deg;
+  --bloom-small-sway-end: -2deg;
+  --bloom-monstera-sway-start: -1.1deg;
+  --bloom-monstera-sway-end: 1.4deg;
+  --bloom-leaf-sway-start: 1.8deg;
+  --bloom-leaf-sway-end: -2.2deg;
+  --bloom-flower-delay: -2s;
+  --bloom-small-delay: -3s;
+  --bloom-angle-duration: 400ms;
+  --bloom-angle-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --bloom-ladybird-duration: 180ms;
+  --bloom-ladybird-tilt: -7deg;
+  --bloom-ladybird-hello-cycle: 700ms;
+  --bloom-ladybird-hello-start: -5deg;
+  --bloom-ladybird-hello-end: 5deg;
+  position: relative;
+  width: 100%;
+  max-width: var(--bloom-art-max-width, 680px);
+  aspect-ratio: var(--bloom-scene-width) / var(--bloom-scene-height);
+  margin-inline: auto;
+  animation: bloom-gust var(--bloom-gust-cycle, 24s) ease-in-out infinite;
+}
+
+.bloom-illustration > svg,
+.bloom-illustration .bloom-plant > svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.bloom-illustration .bloom-flower > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: scale(var(--bloom-scale, 1));
+  transform-origin: center;
+}
+
+@media (min-width: 1024px) {
+  .bloom-page {
+    grid-template-columns: minmax(0, var(--bloom-copy-column)) minmax(0, var(--bloom-art-column));
+    column-gap: var(--bloom-column-gap);
+    align-items: start;
+    min-height: 100dvh;
+  }
+
+  .bloom-editorial {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100dvh;
+    padding-top: calc(var(--content-pt) + var(--bloom-editorial-optical-offset));
+    padding-bottom: var(--content-pt);
+  }
+
+  .bloom-art-column {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
+
+  .bloom-artwork {
+    /* Fit shorter laptop windows without moving the visual centre on scroll. */
+    max-width: min(var(--bloom-art-max-width), calc((100dvh - var(--bloom-window-clearance)) * var(--bloom-scene-width) / var(--bloom-scene-height)));
+  }
+}
+
+.bloom-illustration .bloom-plant {
+  position: absolute;
+  inset: 0;
+  animation: bloom-plant-sway var(--bloom-plant-cycle) ease-in-out infinite;
+}
+
+.bloom-illustration .bloom-flower {
+  position: absolute;
+  left: var(--bloom-head-left);
+  top: var(--bloom-head-top);
+  width: var(--bloom-head-width);
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  animation: bloom-flower-nod var(--bloom-flower-cycle) ease-in-out var(--bloom-flower-delay) infinite;
+}
+
+.bloom-illustration .bloom-small-plant {
+  --bloom-leaf-cycle: var(--bloom-small-cycle);
+  transform-box: view-box;
+  animation: bloom-small-sway var(--bloom-small-cycle) ease-in-out var(--bloom-small-delay) infinite;
+}
+
+.bloom-illustration .bloom-monstera-plant {
+  --bloom-leaf-cycle: var(--bloom-monstera-cycle);
+  transform-box: view-box;
+  animation: bloom-monstera-sway var(--bloom-monstera-cycle) ease-in-out infinite;
+}
+
+.bloom-illustration .bloom-leaf-follow {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: bloom-leaf-follow-through var(--bloom-leaf-cycle, var(--bloom-plant-cycle)) ease-in-out infinite;
+}
+
+.bloom-sprig-pose,
+.bloom-bud-angle {
+  transform-box: view-box;
+}
+
+.bloom-bud-angle {
+  transform-origin: 0 0;
+}
+
+.bloom-ground-sprig {
+  transform-box: view-box;
+  animation: bloom-small-sway var(--bloom-ground-cycle) ease-in-out infinite;
+}
+
+.bloom-monstera-angle,
+.bloom-regular-leaf-angle,
+.bloom-bud-angle,
+.bloom-sprig-pose,
+.bloom-plant {
+  transition: rotate var(--bloom-angle-duration) var(--bloom-angle-ease);
+}
+
+.bloom-ladybird {
+  cursor: help;
+  outline: none;
+}
+
+.bloom-ladybird:focus-visible .bloom-ladybird-focus {
+  opacity: 0.75;
+}
+
+.bloom-ladybird-body {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition: transform var(--bloom-ladybird-duration) ease-out;
+}
+
+.bloom-ladybird:hover .bloom-ladybird-body,
+.bloom-ladybird:focus-visible .bloom-ladybird-body {
+  transform: rotate(var(--bloom-ladybird-tilt));
+}
+
+.bloom-ladybird-antennae {
+  transform-box: view-box;
+  transform-origin: 0 -10px;
+}
+
+.bloom-ladybird:hover .bloom-ladybird-antennae,
+.bloom-ladybird:focus-visible .bloom-ladybird-antennae {
+  animation: ladybird-hello var(--bloom-ladybird-hello-cycle) ease-in-out infinite alternate;
+}
+
+.bloom-illustration[data-animated="false"] {
+  animation-play-state: paused;
+}
+
+.bloom-illustration[data-animated="false"] .bloom-plant,
+.bloom-illustration[data-animated="false"] .bloom-flower,
+.bloom-illustration[data-animated="false"] .bloom-small-plant,
+.bloom-illustration[data-animated="false"] .bloom-monstera-plant,
+.bloom-illustration[data-animated="false"] .bloom-ground-sprig,
+.bloom-illustration[data-animated="false"] .bloom-leaf-follow {
+  animation-play-state: paused;
+}
+
+.bloom-plant[data-animated="false"],
+.bloom-plant[data-animated="false"] .bloom-flower,
+.bloom-plant[data-animated="false"] .bloom-leaf-follow {
+  animation-play-state: paused;
+}
+
+@keyframes bloom-plant-sway {
+  0%, 100% { transform: rotate(calc(var(--bloom-plant-sway-start) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+  50% { transform: rotate(calc(var(--bloom-plant-sway-end) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+}
+
+@keyframes bloom-flower-nod {
+  0%, 100% { transform: rotate(calc(var(--bloom-flower-nod-start) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+  50% { transform: rotate(calc(var(--bloom-flower-nod-end) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+}
+
+@keyframes bloom-small-sway {
+  0%, 100% { transform: rotate(calc(var(--bloom-small-sway-start) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+  50% { transform: rotate(calc(var(--bloom-small-sway-end) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+}
+
+@keyframes bloom-monstera-sway {
+  0%, 100% { transform: rotate(calc(var(--bloom-monstera-sway-start) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+  50% { transform: rotate(calc(var(--bloom-monstera-sway-end) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+}
+
+@keyframes bloom-leaf-follow-through {
+  0%, 100% { transform: rotate(calc(var(--bloom-leaf-sway-start) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+  50% { transform: rotate(calc(var(--bloom-leaf-sway-end) * var(--bloom-breeze) * var(--bloom-gust, 1) * var(--bloom-flex))); }
+}
+
+@keyframes bloom-gust {
+  0%, 30%, 75%, 100% { --bloom-gust: var(--bloom-gust-rest); }
+  48% { --bloom-gust: var(--bloom-gust-peak); }
+  60% { --bloom-gust: var(--bloom-gust-settle); }
+}
+
+@keyframes ladybird-hello {
+  from { transform: rotate(var(--bloom-ladybird-hello-start)); }
+  to { transform: rotate(var(--bloom-ladybird-hello-end)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bloom-illustration {
+    animation: none;
+    --bloom-gust: 1;
+  }
+
+  .bloom-ladybird-body {
+    transition: none;
+  }
+
+  .bloom-ladybird:hover .bloom-ladybird-body,
+  .bloom-ladybird:focus-visible .bloom-ladybird-body {
+    transform: none;
+  }
+
+  .bloom-ladybird:hover .bloom-ladybird-antennae,
+  .bloom-ladybird:focus-visible .bloom-ladybird-antennae {
+    animation: none;
+  }
+
+  .bloom-monstera-angle,
+  .bloom-regular-leaf-angle,
+  .bloom-bud-angle,
+  .bloom-sprig-pose,
+  .bloom-plant {
+    transition: none;
+  }
+
+  .bloom-surprise {
+    transition: none;
+  }
+
+  .bloom-illustration .bloom-plant,
+  .bloom-illustration .bloom-flower,
+  .bloom-illustration .bloom-small-plant,
+  .bloom-illustration .bloom-monstera-plant,
+  .bloom-illustration .bloom-ground-sprig,
+  .bloom-illustration .bloom-leaf-follow {
+    animation: none;
+    transform: none;
+  }
+}

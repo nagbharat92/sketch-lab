@@ -17,7 +17,7 @@ export function SeattleSignature({ animated = true, speed = 1, compact = false, 
   const beside = layout === "beside"
   const creditAlign = beside ? "left" : align
   return (
-    <div className={cn(creditAlign === "left" ? "text-left" : "text-center", beside && "flex items-center gap-3")}>
+    <div className={cn(creditAlign === "left" ? "text-left" : "text-center", beside && "flex items-center gap-3", beside && (align === "center" ? "justify-center" : "justify-start"))}>
       <SeattleSketch
         raining={animated}
         speed={speed}

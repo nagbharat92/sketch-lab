@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowUpRight } from "lucide-react"
+import { ArrowRight, ArrowUpRight } from "lucide-react"
 import { labPages, type PageNode } from "@/data/pages"
 import { Bloom } from "@/components/lab/color-swatch"
 import { SeattleSignature } from "@/components/seattle-signature"
@@ -8,17 +8,23 @@ import { FadeInUp } from "@/components/ui/fade-in-up"
 import { RoughBox, RoughLine } from "@/components/ui/rough-ink"
 import { DEFAULT_BLOOM } from "@/lib/bloom"
 import { JustifiedParagraph } from "@/components/ui/justified-paragraph"
+import { roughPathInfos, ROUGH_OPTIONS } from "@/components/lab/rough"
 
 const DESCRIPTIONS: Record<string, string> = {
-  "folder-lab": "Find the character in a line. Tune ink, shape and perspective.",
-  "type-pairing": "Try type pairings, scales and spacing on a live specimen.",
-  backgrounds: "Build a palette that feels at home in daylight and after dark.",
-  motion: "Explore the rhythm of hand-drawn strokes and hover gestures.",
-  "flower-lab": "Turn colour selections into playful, parametric blooms.",
-  "text-boil": "Give letters a little life with a hand-drawn wobble.",
-  controls: "Sliders, checks and buttons, with the same ink in both themes.",
-  seattle: "A little Space Needle, a little rain. A sketch for a personal signature.",
+  "folder-lab": "Give a tidy line a little character. Then peek inside the folder.",
+  "type-pairing": "Same words, a different feeling. Find two typefaces that get along.",
+  backgrounds: "A little warmer? A little cooler? Find a palette for day and night.",
+  motion: "Find the moment a still drawing starts to feel alive.",
+  "flower-lab": "Grow a hand-drawn garden. Every click plants a different mix.",
+  "text-boil": "Give a few letters a gentle wobble. A little goes a long way.",
+  controls: "Slide, tick and click. Familiar things with a hand-drawn twist.",
+  seattle: "A familiar skyline and a little drizzle. My small Seattle sign-off.",
 }
+
+const invitationPaths = roughPathInfos(
+  "M90 8 C74 7 80 30 58 30 C39 30 27 13 7 20 M7 20 L18 12 M7 20 L20 25",
+  { ...ROUGH_OPTIONS, seed: 93, stroke: "currentColor", fill: "none" },
+)
 
 function LabCard({ page, index }: { page: PageNode; index: number }) {
   const [active, setActive] = useState(false)
@@ -32,7 +38,7 @@ function LabCard({ page, index }: { page: PageNode; index: number }) {
       onBlur={() => setActive(false)}
       className="group relative flex w-full min-w-0 flex-col rounded-xl text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-[calc((100%_-_1.25rem)/2)] lg:w-[calc((100%_-_2.5rem)/3)]"
     >
-      <RoughBox seed={71 + index} className="z-10 text-border group-hover:text-muted-foreground group-focus-visible:text-muted-foreground" />
+      <RoughBox seed={71 + index} className="z-10 text-muted-foreground/35 group-hover:text-muted-foreground group-focus-visible:text-muted-foreground" />
       <div aria-hidden="true" className="flex h-44 items-center justify-center rounded-t-xl bg-(--surface-raised) px-6">
         <LabPreview id={page.id} active={active} />
       </div>
@@ -41,7 +47,7 @@ function LabCard({ page, index }: { page: PageNode; index: number }) {
           <h2 className="font-display text-xl">{page.name}</h2>
           <ArrowUpRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
         </div>
-        <JustifiedParagraph className="mt-2 text-base leading-relaxed text-muted-foreground">{DESCRIPTIONS[page.id]}</JustifiedParagraph>
+        <JustifiedParagraph justify={false} className="mt-2 text-base leading-relaxed text-muted-foreground">{DESCRIPTIONS[page.id]}</JustifiedParagraph>
       </div>
     </a>
   )
@@ -51,19 +57,40 @@ export function LabHome({ index }: { index: number; props?: Record<string, unkno
   return (
     <div>
       <FadeInUp i={index}>
-        <div className="flex items-center justify-center gap-5 text-center">
-          <Bloom size={64} radius={26} shape={DEFAULT_BLOOM} fill="var(--accent-primary)" seed={7} centerHole />
-          <h1 className="font-display text-4xl tracking-tight sm:text-5xl">Sketch Lab</h1>
+        <div className="flex items-center justify-center gap-3 text-center">
+          <Bloom size={40} radius={16} shape={DEFAULT_BLOOM} fill="var(--accent-primary)" seed={7} centerHole />
+          <span className="font-display text-2xl">Sketch Lab</span>
         </div>
-        <JustifiedParagraph className="mt-6 text-center text-xl">Experiments in hand-drawn interfaces.</JustifiedParagraph>
-        <JustifiedParagraph className="mx-auto mt-3 max-w-xl text-center text-lg leading-relaxed text-muted-foreground">
-          A place to play with sketchy strokes, colour, type and motion.
-          Open a lab, move a few sliders and see what happens.
+        <h1 className="mx-auto mt-7 max-w-3xl text-center font-display text-4xl leading-tight tracking-tight sm:text-5xl">
+          Small things,<br />drawn differently.
+        </h1>
+        <JustifiedParagraph className="mx-auto mt-5 max-w-xl text-center text-lg leading-relaxed text-muted-foreground">
+          I'm Bharat. This is my little playground for making interfaces feel more human.
+          Pick an experiment and give it a nudge.
         </JustifiedParagraph>
-        <RoughLine seed={12} className="mx-auto mt-8 w-12 text-muted-foreground" />
+        <div className="relative mx-auto mt-7 w-fit">
+          <a
+            href="#/flower-lab"
+            className="ink-boil-parent relative inline-flex items-center gap-3 rounded-xl bg-(--accent-primary) px-6 py-3 text-base font-semibold text-(--accent-primary-ink) transition-colors hover:bg-(--accent-yellow) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+          >
+            <RoughBox seed={91} className="text-(--accent-primary-ink)/70" />
+            <span>Start with a bloom</span>
+            <ArrowRight aria-hidden="true" className="ink-boil size-4" />
+          </a>
+          <div aria-hidden="true" className="absolute left-full top-0 ml-5 hidden w-44 items-start gap-1 text-muted-foreground sm:flex">
+            <svg viewBox="0 0 100 40" className="mt-3 w-16 shrink-0 overflow-visible" fill="none" stroke="currentColor" strokeWidth={1} strokeLinecap="round" strokeLinejoin="round">
+              {invitationPaths.map((path, i) => <path key={i} d={path.d} />)}
+            </svg>
+            <span className="text-sm italic leading-snug">a small happy place to start</span>
+          </div>
+        </div>
       </FadeInUp>
       <FadeInUp i={index + 1}>
-        <nav aria-label="Explore the labs" className="mt-10 flex flex-wrap justify-center gap-5">
+        <div className="mt-14 text-center">
+          <h2 className="font-sans text-lg font-semibold">A few things to play with</h2>
+          <p className="mt-1 text-sm text-muted-foreground">No right settings. Just see what feels good.</p>
+        </div>
+        <nav aria-label="Explore the labs" className="mt-6 flex flex-wrap justify-center gap-5">
           {labPages.map((page, i) => <LabCard key={page.id} page={page} index={i} />)}
         </nav>
       </FadeInUp>

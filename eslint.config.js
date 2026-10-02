@@ -46,7 +46,7 @@ export default tseslint.config([
 
   // Build & tooling files — Node context (vite.config.js, plugins, this file)
   {
-    files: ['*.js', 'plugins/**/*.js'],
+    files: ['*.js', 'plugins/**/*.js', 'tests/**/*.mjs'],
     extends: [js.configs.recommended],
     languageOptions: {
       ecmaVersion: 'latest',

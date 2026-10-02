@@ -5,6 +5,10 @@ import { RoughBox, RoughLine } from "@/components/ui/rough-ink"
 import { DEFAULT_BLOOM } from "@/lib/bloom"
 import { cn } from "@/lib/utils"
 
+const homePaths = roughPathInfos(
+  "M22 52 L68 14 L114 52 M32 46 L32 94 L56 94 L56 68 L80 68 L80 94 L104 94 L104 46",
+  { ...ROUGH_OPTIONS, seed: 17, fill: "none", stroke: "currentColor" },
+)
 const folderPaths = roughPathInfos(
   roundedPolygonPath([
     { x: 12, y: 18 }, { x: 48, y: 18 }, { x: 62, y: 34 },
@@ -20,6 +24,14 @@ const controlPaths = [
 
 export function LabPreview({ id, active, compact = false }: { id: string; active: boolean; compact?: boolean }) {
   switch (id) {
+    case "home":
+      return (
+        <svg width={compact ? 40 : 136} height={compact ? 32 : 108} viewBox="0 0 136 108" className={cn(active && compact && "ink-boil-on")}>
+          <g fill="none" stroke="currentColor" strokeWidth={compact ? 3 : ROUGH_OPTIONS.strokeWidth} strokeLinecap="round">
+            {homePaths.map((path, i) => <path key={i} d={path.d} />)}
+          </g>
+        </svg>
+      )
     case "seattle":
       return <SeattleSketch raining={active} className={cn("w-40 [--lab-surface:var(--surface-raised)]", compact && "w-11 [--lab-surface:var(--surface)]")} />
     case "folder-lab":

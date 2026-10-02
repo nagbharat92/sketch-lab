@@ -168,7 +168,6 @@ export type SidebarNode = FolderNode | PageNode
 export const labPages = contentTree.filter((node): node is PageNode => node.type === 'page')
 
 export const sidebarData: SidebarNode[] = [
-  // Home is reached through the sidebar header, not the lab list.
   {
     id: 'home',
     type: 'page',

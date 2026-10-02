@@ -26,7 +26,7 @@ export function AppSidebar({ dark, setDark }: { dark: boolean; setDark: (fn: (d:
     <Sidebar>
       <SidebarHeader className="shrink-0 px-5 py-5 text-left">
         <button
-          aria-label="Home"
+          aria-label="Sketch Lab home"
           onClick={() => navigate('home')}
           className={cn(
             "ink-boil-parent flex w-full items-center gap-3 rounded-md text-sidebar-foreground transition-colors duration-150 hover:text-sidebar-accent-foreground outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring cursor-pointer",
@@ -36,12 +36,8 @@ export function AppSidebar({ dark, setDark }: { dark: boolean; setDark: (fn: (d:
           <Bloom size={32} radius={13} shape={DEFAULT_BLOOM} fill="var(--accent-primary)" seed={7} centerHole />
           <span className="ink-boil font-display text-xl">Sketch Lab</span>
         </button>
-        <p className="mt-2 text-sm leading-snug text-sidebar-foreground/65">
-          Small experiments in hand-drawn UI.
-        </p>
       </SidebarHeader>
 
-      {/* Hairline anchoring Home as the root, above the grouped tree. */}
       <SidebarSeparator boil bowing={1} />
 
       <SidebarContent className="p-(--sidebar-content-padding) pt-(--sidebar-section-gap) hide-scrollbar">

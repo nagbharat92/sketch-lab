@@ -24,6 +24,7 @@ interface ProjectCanvasProps {
 export function ProjectCanvas({ page }: ProjectCanvasProps) {
   const blocks = page.blocks ?? []
   const isHome = page.id === 'home'
+  const isBloom = page.id === 'flower-lab'
 
   // The page title replaces the first section heading: find the first text block
   // that carries a title, drop that title, and render the page name above it.
@@ -37,8 +38,8 @@ export function ProjectCanvas({ page }: ProjectCanvasProps) {
       {/* Scrollable content — full height, no clipping */}
       <div className="h-full overflow-y-auto">
         <div
-          className={`mx-auto w-full max-w-5xl px-(--content-px) pb-(--content-py-mobile) lg:pb-(--content-py) ${
-            isHome ? 'pt-(--content-pt-home)' : 'pt-(--content-pt)'
+          className={`mx-auto w-full max-w-5xl px-(--content-px) pb-(--content-py-mobile) ${isBloom ? 'lg:pb-0' : 'lg:pb-(--content-py)'} ${
+            isHome ? 'pt-(--content-pt-home)' : isBloom ? 'pt-(--content-pt) lg:pt-0' : 'pt-(--content-pt)'
           }`}
         >
           {blocks.map((block, i) => {
