@@ -5,6 +5,51 @@
   }
 }
 
+.bloom-entry {
+  position: relative;
+  min-height: 75svh;
+}
+
+.bloom-entry[data-ready="false"] .bloom-page {
+  visibility: hidden;
+}
+
+.bloom-entry[data-ready="true"] .bloom-page {
+  animation: fade-in var(--duration-content) var(--ease-content) both;
+}
+
+.bloom-intro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.bloom-intro h1 {
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  line-height: 1;
+}
+
+.bloom-intro .animate-bloom-spin {
+  flex-shrink: 0;
+  animation-duration: 6s;
+}
+
+@media (min-width: 1024px) {
+  .bloom-entry { min-height: 100svh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bloom-intro .animate-bloom-spin,
+  .bloom-entry[data-ready="true"] .bloom-page {
+    animation: none;
+  }
+}
+
 .bloom-page {
   --bloom-page-gap: 4rem;
   --bloom-copy-column: 0.72fr;

@@ -10,6 +10,8 @@ type ParagraphProps = ComponentPropsWithoutRef<"p"> & {
   dropCap?: boolean
   dropCapArtwork?: { glyph: ReactNode; aspectRatio: number }
   policy?: Partial<Options>
+  deferred?: boolean
+  onReady?: () => void
 }
 
 const DROP_CAP = { lines: 2, gapEm: 0.35, probeSize: 100 } as const
@@ -52,7 +54,7 @@ function plainText(children: ReactNode): string | null {
 
 const unsupportedScript = /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\u200e\u200f\u202a-\u202e\u2066-\u2069]/u
 
-export function JustifiedParagraph({ children, className, justify = true, dropCap = false, dropCapArtwork, policy, ...props }: ParagraphProps) {
+export function JustifiedParagraph({ children, className, justify = true, dropCap = false, dropCapArtwork, policy, deferred = false, onReady, ...props }: ParagraphProps) {
   const rawText = plainText(children)
   const text = rawText?.replace(/[ \t\r\n\f]+/g, " ").trim() ?? null
   const bodyText = dropCap && text ? text.slice(1).trimStart() : text
@@ -147,11 +149,32 @@ export function JustifiedParagraph({ children, className, justify = true, dropCa
 
     const preparedKey = `${bodyText}|${typography}`
     if (preparedRef.current?.key !== preparedKey) {
-      const measured = prepare(bodyText, (fragment) => {
-        probe.textContent = fragment
-        return probe.getBoundingClientRect().width
-      })
-      probe.textContent = ""
+      let measured: Prepared
+      if (deferred) {
+        // Insert every probe before reading widths: one layout, not one per word.
+        const fragments = new Set<string>()
+        prepare(bodyText, (fragment) => { fragments.add(fragment); return 1 })
+        const spans = [...fragments].map((fragment) => {
+          const span = document.createElement("span")
+          span.style.display = "inline-block"
+          span.textContent = fragment
+          return span
+        })
+        probe.replaceChildren(...spans)
+        const widths = new Map(spans.map((span) => [span.textContent, span.getBoundingClientRect().width]))
+        measured = prepare(bodyText, (fragment) => {
+          const width = widths.get(fragment)
+          if (width === undefined) throw new Error(`Missing text measurement: ${fragment}`)
+          return width
+        })
+        probe.replaceChildren()
+      } else {
+        measured = prepare(bodyText, (fragment) => {
+          probe.textContent = fragment
+          return probe.getBoundingClientRect().width
+        })
+        probe.textContent = ""
+      }
       preparedRef.current = { key: preparedKey, paragraph: measured }
     }
 
@@ -187,10 +210,10 @@ export function JustifiedParagraph({ children, className, justify = true, dropCa
         }
       }),
     })
-  }, [compatible, text, bodyText, dropCap, dropCapArtwork, policy, setLayout])
+  }, [compatible, text, bodyText, dropCap, dropCapArtwork, policy, deferred, setLayout])
 
   // Also catches inherited Type-lab font/style changes on React commits.
-  useLayoutEffect(() => { refresh() })
+  useLayoutEffect(() => { if (!deferred) refresh() })
 
   useEffect(() => {
     const paragraph = paragraphRef.current
@@ -212,6 +235,7 @@ export function JustifiedParagraph({ children, className, justify = true, dropCa
     }
     const observer = new ResizeObserver(schedule)
     observer.observe(paragraph)
+    if (deferred) schedule()
     window.addEventListener("resize", schedule)
     document.fonts.addEventListener("loadingdone", fontsChanged)
     document.fonts.addEventListener("loadingerror", fontsFailed)
@@ -224,7 +248,7 @@ export function JustifiedParagraph({ children, className, justify = true, dropCa
       document.fonts.removeEventListener("loadingdone", fontsChanged)
       document.fonts.removeEventListener("loadingerror", fontsFailed)
     }
-  }, [compatible, refresh])
+  }, [compatible, refresh, deferred])
 
   const current = layout?.source === text ? layout : null
   const mode = !justify ? "native-label"
@@ -232,6 +256,10 @@ export function JustifiedParagraph({ children, className, justify = true, dropCa
     : !text ? "native-empty"
     : !compatible ? "native-script"
     : current?.mode ?? "native-pending"
+
+  useEffect(() => {
+    if (mode !== "native-pending" && mode !== "native-font-loading") onReady?.()
+  }, [mode, onReady])
 
   return (
     <p

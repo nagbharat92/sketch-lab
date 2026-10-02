@@ -52,7 +52,7 @@ The shared `JustifiedParagraph` component measures the actual rendered font, cac
 
 Bloom opts into a two-line drop cap: Justice fits the opening lines to a narrower measure, then returns to the full column width. Its custom initial uses the same measured exclusion, without reserving extra empty lines beneath it.
 
-Direct Bloom visits load the theme's body font before React mounts, so the final paragraph layout and garden paint together. There is no separate text-hiding or delayed-reveal layer.
+Bloom opens with a compact spinning-flower title while its paragraphs prepare. Batched text measurements avoid repeated layout flushes; the garden is revealed after both paragraphs are ready and a two-second minimum.
 
 ## Garden tokens
 

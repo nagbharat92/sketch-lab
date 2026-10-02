@@ -1,7 +1,9 @@
-import { useState, useSyncExternalStore } from "react"
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react"
 import { motion, useAnimationControls } from "framer-motion"
 import { FadeInUp } from "@/components/ui/fade-in-up"
 import { BloomIllustration } from "@/components/lab/bloom-illustration"
+import { Bloom } from "@/components/lab/color-swatch"
+import { DEFAULT_BLOOM } from "@/lib/bloom"
 import { growBloom, initialBloomState } from "@/components/lab/bloom-state"
 import { BLOOM_MOTION, BLOOM_OUTLINE, BLOOM_PROSE_POLICY, BLOOM_SCENE_STYLE, BLOOM_SWATCHES } from "@/components/lab/bloom-tokens"
 import { RoughBox } from "@/components/ui/rough-ink"
@@ -44,6 +46,46 @@ const BLOOM_INITIAL = {
 }
 
 export function FlowerLab({ index }: FlowerLabProps) {
+  const [preparing, setPreparing] = useState(false)
+  const [introFinished, setIntroFinished] = useState(false)
+  const [firstReady, setFirstReady] = useState(false)
+  const [secondReady, setSecondReady] = useState(false)
+  const firstDone = useCallback(() => setFirstReady(true), [])
+  const secondDone = useCallback(() => setSecondReady(true), [])
+  const ready = introFinished && firstReady && secondReady
+
+  useEffect(() => {
+    let secondFrame = 0
+    // Give the introduction a paint before mounting the garden behind it.
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => setPreparing(true))
+    })
+    const timer = window.setTimeout(() => setIntroFinished(true), 2000)
+    return () => {
+      cancelAnimationFrame(firstFrame)
+      cancelAnimationFrame(secondFrame)
+      window.clearTimeout(timer)
+    }
+  }, [])
+
+  return (
+    <div className="bloom-entry" data-ready={ready} aria-busy={!ready}>
+      {!ready && (
+        <div className="bloom-intro" role="status" aria-label="Loading Bloom">
+          <Bloom size={52} radius={21} shape={DEFAULT_BLOOM} fill={BLOOM_SWATCHES[0].color} seed={7} centerHole spin />
+          <h1>Bloom</h1>
+        </div>
+      )}
+      <div inert={!ready} aria-hidden={!ready}>
+        {preparing && <Garden index={index} firstDone={firstDone} secondDone={secondDone} />}
+      </div>
+    </div>
+  )
+}
+
+function Garden({ index, firstDone, secondDone }: {
+  index: number; firstDone: () => void; secondDone: () => void
+}) {
   const [bloom, setBloom] = useState(initialBloomState)
   const { sceneSeed, garden, colorIndex } = bloom
   const surpriseMotion = useAnimationControls()
@@ -67,10 +109,10 @@ export function FlowerLab({ index }: FlowerLabProps) {
     <article aria-label="Bloom: a generative garden" className="bloom-page" style={BLOOM_SCENE_STYLE}>
       <div className="bloom-editorial">
         <FadeInUp i={index}>
-          <JustifiedParagraph dropCap dropCapArtwork={BLOOM_INITIAL} policy={BLOOM_PROSE_POLICY} className="bloom-story">
+          <JustifiedParagraph deferred onReady={firstDone} dropCap dropCapArtwork={BLOOM_INITIAL} policy={BLOOM_PROSE_POLICY} className="bloom-story">
             I started with a single flower and kept experimenting with its shape, colour and movement. Now it is a whole garden, drawn in code. Each click creates a new arrangement of flowers and foliage.
           </JustifiedParagraph>
-          <JustifiedParagraph policy={BLOOM_PROSE_POLICY} className="bloom-story">
+          <JustifiedParagraph deferred onReady={secondDone} policy={BLOOM_PROSE_POLICY} className="bloom-story">
             The garden follows rules for plant size, branching and spacing. Taller blooms lead; smaller flowers and monsteras fill the gaps. I generate the leaf shapes, veins and ground details in code, then add a gentle ink wiggle.
           </JustifiedParagraph>
 

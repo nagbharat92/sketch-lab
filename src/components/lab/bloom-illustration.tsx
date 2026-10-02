@@ -258,7 +258,6 @@ function Ladybird({ x = 416, y = 394, angle = -28, scale = 1 }: {
                   <stop offset="1" stopColor={PIGMENTS.ladybird.dark} />
                 </radialGradient>
               </defs>
-              <ellipse cx={1} cy={3} rx={9} ry={12} fill={PIGMENTS.ladybird.underside} opacity={0.19} />
               <g fill="none" stroke="currentColor" strokeWidth={0.8} strokeLinecap="round">
                 <path d="M-6 -4 L-11 -8 L-13 -7 M-7 0 L-12 0 L-14 3 M-6 6 L-10 9 L-11 13 M6 -4 L11 -8 L13 -7 M7 0 L12 0 L14 3 M6 6 L10 9 L11 13" />
                 <path className="bloom-ladybird-antennae" d="M-3 -10 L-5 -15 M3 -10 L5 -15" />
@@ -301,7 +300,6 @@ function BotanicalGround() {
       <ellipse className="bloom-soil" cx={BLOOM_SCENE.centerX} cy={568} rx={ground.width} ry={ground.depth} fill={`url(#soil-${id})`} />
       {ground.grasses.map((clump, i) => (
         <g key={i} className="bloom-ground-grass" data-blade-count={clump.blades.length}>
-          <ellipse cx={clump.x} cy={clump.y + 1} rx={7} ry={1.5} fill={PIGMENTS.ground.grassOutline} opacity={0.08} />
           {clump.blades.map((blade, j) => (
             <g key={j}>
               <path d={blade.d} fill={pigment(blade.fill, ground.lightness)} stroke={PIGMENTS.ground.grassOutline} strokeWidth={0.4} />
@@ -334,13 +332,11 @@ function BotanicalGround() {
             </linearGradient>
             <clipPath id={`stone-edge-${id}-${i}`}><path d={stone.d} /></clipPath>
           </defs>
-          <ellipse cy={stone.height * 0.85} rx={stone.width} ry={stone.height * 0.3} fill={PIGMENTS.ground.stoneUnderside} opacity={0.1} />
           <path d={stone.d} fill={`url(#stone-${id}-${i})`} stroke={PIGMENTS.ground.stoneOutline} strokeWidth={0.55} />
           <path d={`M${-stone.width * 0.6} ${-stone.height * 0.15} Q${-stone.width * 0.3} ${-stone.height * 0.8} ${stone.width * 0.35} ${-stone.height * 0.55}`} clipPath={`url(#stone-edge-${id}-${i})`} fill="none" stroke={PIGMENTS.ground.stoneHighlight} strokeWidth={0.7} opacity={0.7} />
         </g>
       ))}
       {ground.fallenPetals.map((petal, i) => <g key={i} className="bloom-fallen-petal" transform={`translate(${petal.x} ${petal.y}) rotate(${petal.angle}) scale(${petal.scale})`}>
-        <ellipse cx={2} cy={2} rx={11} ry={3} fill={PIGMENTS.ground.petalUnderside} opacity={0.08} />
         <path d="M-8 1 C-8 -7 2 -9 10 -2 C14 3 6 7 -1 4 Q-6 6 -8 1 Z" fill={petal.fill} stroke={BOTANICAL_INK} strokeWidth={0.5} opacity={0.75} />
         <path d="M-6 1 Q2 3 8 -1" fill="none" stroke={PIGMENTS.ground.petalHighlight} strokeWidth={0.6} opacity={0.65} />
       </g>)}
@@ -423,7 +419,6 @@ function BotanicalFlower({ shape, fill, centerHole, centerLightness, seed, size 
         ))}
         {centerRadius > 0 && (
           <g>
-            <ellipse cx={BLOOM_SCENE.flowerCenter + 1} cy={BLOOM_SCENE.flowerCenter + 1} rx={centerRadius + 3} ry={centerRadius * 0.93 + 2} fill={PIGMENTS.flower.centerUnderside} opacity={0.13} />
             <ellipse cx={BLOOM_SCENE.flowerCenter} cy={BLOOM_SCENE.pollenCenterY} rx={centerRadius} ry={centerRadius * 0.92} fill={`url(#bloom-center-${uid})`} stroke="currentColor" strokeWidth={0.8} />
             {traits.texture === "rings" && <g className="bloom-pollen-rings" fill="none" stroke="currentColor" strokeWidth={0.45} opacity={0.2}>
               {[0.25, 0.5, 0.75].map((radius) => <ellipse key={radius} cx={BLOOM_SCENE.flowerCenter} cy={BLOOM_SCENE.pollenCenterY} rx={centerRadius * radius} ry={centerRadius * radius * 0.92} />)}
