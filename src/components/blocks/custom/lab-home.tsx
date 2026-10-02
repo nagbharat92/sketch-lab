@@ -30,7 +30,7 @@ function LabCard({ page, index }: { page: PageNode; index: number }) {
       onPointerLeave={() => setActive(false)}
       onFocus={() => setActive(true)}
       onBlur={() => setActive(false)}
-      className="group relative flex min-w-0 flex-col rounded-xl text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group relative flex w-full min-w-0 flex-col rounded-xl text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-[calc((100%_-_1.25rem)/2)] lg:w-[calc((100%_-_2.5rem)/3)]"
     >
       <RoughBox seed={71 + index} className="z-10 text-border group-hover:text-muted-foreground group-focus-visible:text-muted-foreground" />
       <div aria-hidden="true" className="flex h-44 items-center justify-center rounded-t-xl bg-(--surface-raised) px-6">
@@ -63,7 +63,7 @@ export function LabHome({ index }: { index: number; props?: Record<string, unkno
         <RoughLine seed={12} className="mx-auto mt-8 w-12 text-muted-foreground" />
       </FadeInUp>
       <FadeInUp i={index + 1}>
-        <nav aria-label="Explore the labs" className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <nav aria-label="Explore the labs" className="mt-10 flex flex-wrap justify-center gap-5">
           {labPages.map((page, i) => <LabCard key={page.id} page={page} index={i} />)}
         </nav>
       </FadeInUp>
