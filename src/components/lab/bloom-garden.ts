@@ -1,9 +1,10 @@
 import { BLOOM_COMPOSITION, BLOOM_MOTION, BLOOM_PIGMENTS, BLOOM_SCENE, GARDEN_ROLES, type GardenRole } from "./bloom-tokens.ts"
+import { branchCurve, curvePoint, sceneRandom, type Curve, type Point } from "./bloom-math.ts"
+import { createGardenMonsteraPose, gardenMonsteraAnatomySeed, type GardenMonsteraPose } from "./bloom-monstera-pose.ts"
+export { branchCurve, curvePath, curvePoint, sceneRandom } from "./bloom-math.ts"
+export type { Curve, Point } from "./bloom-math.ts"
 export { GARDEN_ROLES } from "./bloom-tokens.ts"
 export type { GardenRole } from "./bloom-tokens.ts"
-
-export type Point = { x: number; y: number }
-export type Curve = readonly [Point, Point, Point, Point]
 
 export type LeafPlacement = Point & {
   angle: number
@@ -30,12 +31,15 @@ export type MonsteraPlant = {
   id: string
   role: GardenRole
   root: Point
-  base: Point
-  angle: number
+  // Placement is a composition guide; pose owns the physical attachment and rotation.
+  placement: { tipTarget: Point; stalkLean: number }
+  anatomySeed: number
+  pose: GardenMonsteraPose
   size: number
   stemWidth: number
   fullness: number
   maturity: number
+  splitCount?: number
   holeFamily: "paired" | "graduated" | "offset"
   holes: MonsteraHole[]
 }
@@ -47,38 +51,8 @@ export type GardenScene = {
   vine: Curve
 }
 
-// Object-labelled streams keep composition independent of ink ticks and render order.
-export function sceneRandom(seed: number, label: string) {
-  let state = seed
-  for (const character of label) state = (Math.imul(state, 31) + character.charCodeAt(0)) >>> 0
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0
-    return state / 4294967296
-  }
-}
-
 const interpolate = (range: readonly [number, number], t: number) => range[0] + (range[1] - range[0]) * t
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y)
-
-export function curvePoint(curve: Curve, t: number): Point {
-  const u = 1 - t
-  return {
-    x: u ** 3 * curve[0].x + 3 * u ** 2 * t * curve[1].x + 3 * u * t ** 2 * curve[2].x + t ** 3 * curve[3].x,
-    y: u ** 3 * curve[0].y + 3 * u ** 2 * t * curve[1].y + 3 * u * t ** 2 * curve[2].y + t ** 3 * curve[3].y,
-  }
-}
-
-export const curvePath = (curve: Curve) =>
-  `M${curve[0].x} ${curve[0].y} C${curve[1].x} ${curve[1].y} ${curve[2].x} ${curve[2].y} ${curve[3].x} ${curve[3].y}`
-
-export function branchCurve(start: Point, end: Point): Curve {
-  return [
-    start,
-    { x: start.x + (end.x - start.x) * 0.2, y: start.y + (end.y - start.y) * 0.6 },
-    { x: start.x + (end.x - start.x) * 0.75, y: end.y + 7 },
-    end,
-  ]
-}
 
 export function gardenCharacter(seed: number) {
   const random = sceneRandom(seed, "garden-character")
@@ -273,7 +247,11 @@ function makeMonstera(seed: number, role: GardenRole, index: number, count: numb
       })
     }
   }
-  return { id, role, root, base, angle, size, stemWidth: interpolate(rules.stem, vigor) * 0.7, fullness, maturity, holeFamily, holes }
+  const placement = { tipTarget: base, stalkLean: angle }
+  const stemWidth = interpolate(rules.stem, vigor) * 0.7
+  const anatomySeed = gardenMonsteraAnatomySeed(seed, id)
+  const pose = createGardenMonsteraPose(seed, index, { root, placement, size, stemWidth, fullness }, anatomySeed)
+  return { id, role, root, placement, anatomySeed, pose, size, stemWidth, fullness, maturity, holeFamily, holes }
 }
 
 export function generateGarden(seed: number, kingDiameter?: number): GardenScene {

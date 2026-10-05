@@ -1,0 +1,383 @@
+.bloom-study-spread {
+  padding-block: clamp(4rem, 8vw, 7rem);
+  min-height: auto;
+  row-gap: 2rem;
+  align-items: center;
+}
+
+.bloom-entry[data-ready="true"] #bloom-leaf,
+.bloom-entry[data-ready="true"] #bloom-sprig,
+.bloom-entry[data-ready="true"] #bloom-ladybird,
+.bloom-entry[data-ready="true"] #bloom-ground {
+  animation: none;
+}
+
+.bloom-study-copy,
+.bloom-study-workbench {
+  min-width: 0;
+}
+
+.bloom-study-copy h2 {
+  margin-bottom: 1.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.bloom-study-copy .bloom-story {
+  padding-inline-end: 0.5rem;
+}
+
+.bloom-study-generate {
+  transition: transform 160ms ease-out;
+}
+
+.bloom-study-generate:active {
+  transform: translateY(2px) scale(0.96);
+}
+
+.bloom-study-filter {
+  position: absolute;
+  pointer-events: none;
+}
+
+.bloom-monstera-shadow {
+  opacity: var(--monstera-shadow-opacity);
+}
+
+[data-theme="dark"] .bloom-monstera-shadow {
+  opacity: var(--monstera-shadow-dark-opacity);
+}
+
+.bloom-study-stage,
+.bloom-study-specimen {
+  margin: 0;
+  min-width: 0;
+}
+
+.bloom-study-stage {
+  padding-inline: 1rem;
+}
+
+#bloom-flower .bloom-study-stage,
+#bloom-leaf .bloom-study-stage,
+#bloom-sprig .bloom-study-stage,
+#bloom-ground .bloom-study-stage,
+#bloom-ladybird .bloom-study-stage,
+#bloom-monstera .bloom-study-stage {
+  padding-inline: 0;
+}
+
+.bloom-study-arrival > .bloom-monstera-presentation {
+  aspect-ratio: auto;
+  max-width: none;
+}
+
+.bloom-study-arrival > svg,
+.bloom-study-specimen > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.bloom-study-sway {
+  transform-origin: 50% 75%;
+  animation: bloom-study-sway var(--study-sway) ease-in-out infinite;
+}
+
+.bloom-study-stage[data-active="false"] .bloom-study-sway,
+.bloom-study-stage[data-sway="false"] .bloom-study-sway {
+  animation: none;
+}
+
+.bloom-study-stage[data-active="true"][data-settle="true"] .bloom-study-arrival {
+  animation: bloom-study-arrive var(--study-settle) ease-out both;
+}
+
+.bloom-ladybird-caption {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.bloom-ladybird-caption a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.bloom-ladybird-caption span {
+  display: block;
+  opacity: 0.7;
+}
+
+.bloom-study-controls {
+  max-width: 32rem;
+  margin: 1rem auto 0;
+}
+
+.bloom-flower-controls,
+.bloom-study-copy-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  margin: 2.25rem 0 2.5rem;
+}
+
+.bloom-flower-magazine .bloom-shape-choices,
+#bloom-leaf .bloom-shape-choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  justify-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.bloom-flower-magazine .bloom-shape-choice,
+#bloom-leaf .bloom-shape-choice {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+
+.bloom-petal-name,
+.bloom-study-slider-label,
+.bloom-monstera-choices {
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.bloom-petal-name {
+  display: block;
+  margin-top: 0.25rem;
+  text-transform: capitalize;
+}
+
+.bloom-study-slider-row {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+.bloom-study-slider-row[data-disabled="true"] .bloom-study-slider-label {
+  opacity: 0.4;
+}
+
+#bloom-monstera .bloom-study-slider-row {
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+#bloom-leaf .bloom-study-copy-controls {
+  gap: 1rem;
+}
+
+#bloom-leaf .bloom-shape-choice-art {
+  width: min(100%, 2.75rem);
+  margin-inline: auto;
+  border-bottom: 0;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+#bloom-leaf .bloom-shape-choice input:checked ~ .bloom-shape-choice-art {
+  filter: none;
+  opacity: 1;
+}
+
+.bloom-monstera-choices {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.bloom-monstera-choice-options {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.bloom-monstera-choice {
+  position: relative;
+  min-width: 0;
+  text-align: center;
+}
+
+.bloom-monstera-choice input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.bloom-monstera-choice-name {
+  display: block;
+  margin-top: 0.25rem;
+  text-transform: capitalize;
+}
+
+.bloom-monstera-choice-art {
+  display: block;
+  width: min(100%, 2.75rem);
+  margin-inline: auto;
+  padding: 0.4rem;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.bloom-monstera-choice-art svg {
+  display: block;
+  width: 100%;
+  height: 3rem;
+}
+
+.bloom-monstera-choice input:checked ~ .bloom-monstera-choice-art {
+  filter: none;
+  opacity: 1;
+}
+
+.bloom-monstera-choice input:checked ~ .bloom-monstera-choice-name {
+  color: var(--text);
+}
+
+.bloom-monstera-choice input:focus-visible ~ .bloom-monstera-choice-art {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+.bloom-shape-choice input:checked ~ .bloom-petal-name {
+  color: var(--text);
+}
+
+.bloom-flower-magazine .bloom-shape-choice-art {
+  width: min(100%, 2.75rem);
+  margin-inline: auto;
+  border-bottom: 0;
+  transition: transform 160ms ease-out, color 160ms ease-out;
+}
+
+.bloom-flower-magazine .bloom-shape-choice:hover .bloom-shape-choice-art {
+  transform: translateY(-2px);
+}
+
+.bloom-flower-magazine .bloom-shape-choice input:checked ~ .bloom-shape-choice-art {
+  transform: scale(1.12);
+}
+
+.bloom-shape-choice input:checked ~ .bloom-shape-choice-art .bloom-choice-fill {
+  fill: var(--study-accent, currentColor);
+  fill-opacity: 1;
+}
+
+.bloom-shape-choices {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  border: 0;
+  padding: 0;
+  margin: 0 0 1rem;
+  min-width: 0;
+}
+
+.bloom-shape-choice {
+  position: relative;
+  display: block;
+  width: 3.5rem;
+  flex-shrink: 0;
+}
+
+.bloom-shape-choice input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.bloom-shape-choice-art {
+  display: block;
+  padding: 0.4rem;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+}
+
+.bloom-shape-choice-art svg {
+  display: block;
+  width: 100%;
+  height: 3rem;
+}
+
+.bloom-shape-choice input:checked ~ .bloom-shape-choice-art {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.bloom-shape-choice input:focus-visible ~ .bloom-shape-choice-art {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+.bloom-study-sliders {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.bloom-study-sliders[data-count="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bloom-study-sliders[data-count="1"] {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 14rem;
+  margin-inline: auto;
+}
+
+@keyframes bloom-study-sway {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1.4deg); }
+}
+
+@keyframes bloom-study-arrive {
+  0% { transform: rotate(-4deg) scale(0.94); }
+  55% { transform: rotate(1.5deg) scale(1.01); }
+  100% { transform: rotate(0) scale(1); }
+}
+
+@media (min-width: 1024px) {
+  .bloom-study-spread {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  }
+  .bloom-study-spread[data-reversed="true"] {
+    grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+  }
+  .bloom-study-spread[data-reversed="true"] .bloom-study-copy { grid-column: 2; grid-row: 1; }
+  .bloom-study-spread[data-reversed="true"] .bloom-study-workbench { grid-column: 1; grid-row: 1; }
+  .bloom-study-spread[data-wide="true"] .bloom-study-workbench { grid-column: 1 / -1; }
+  .bloom-study-spread[data-wide="true"] .bloom-study-copy { grid-column: 1 / -1; max-width: 34rem; }
+  #bloom-flower,
+  #bloom-leaf,
+  #bloom-sprig,
+  #bloom-ground,
+  #bloom-ladybird,
+  #bloom-monstera {
+    grid-template-columns: minmax(0, 0.68fr) minmax(0, 1.32fr);
+    column-gap: clamp(2rem, 4vw, 3rem);
+  }
+}
+
+@media (max-width: 380px) {
+  .bloom-study-sliders { gap: 0.75rem; }
+  .bloom-shape-choices { gap: 0.5rem; }
+  .bloom-flower-magazine .bloom-shape-choices { gap: 0.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bloom-study-sway,
+  .bloom-study-stage[data-active="true"][data-settle="true"] .bloom-study-arrival { animation: none; }
+  .bloom-study-generate { transition: none; }
+  .bloom-flower-magazine .bloom-shape-choice-art { transition: none; }
+  .bloom-study-generate:active { transform: none; }
+}

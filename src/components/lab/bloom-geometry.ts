@@ -1,6 +1,6 @@
 import type { BloomShape } from "../../lib/bloom.ts"
 import { curvePath, curvePoint, gardenCharacter, sceneRandom, type Curve, type MonsteraHole, type Point } from "./bloom-garden.ts"
-import { BLOOM_COMPOSITION, BLOOM_MOTION, BLOOM_PIGMENTS, BLOOM_SCENE, PETAL_FAMILIES, POLLEN_TEXTURES, VARIEGATION_PATTERNS } from "./bloom-tokens.ts"
+import { BLOOM_COMPOSITION, BLOOM_MOTION, BLOOM_PIGMENTS, BLOOM_SCENE, LEAF_FAMILIES, MONSTERA_AGE, PETAL_FAMILIES, POLLEN_TEXTURES, VARIEGATION_PATTERNS } from "./bloom-tokens.ts"
 
 export function plantMotion(seed: number, label: string, cycle: number) {
   const random = sceneRandom(seed, `motion:${label}`)
@@ -112,10 +112,9 @@ function lateralVein(start: Point, end: Point, side: number, leave: number, arri
 
 const degrees = (value: number) => value * Math.PI / 180
 
-// Pinnate, camptodromous venation guided by the actual outline (Runions et al. 2005; Mündermann et al. 2003).
-function pinnateVeins(spine: Curve, edge: string, random: () => number, fullBase: boolean, scale = 1): Vein[] {
+export function leafBoundary(edge: string): Point[] {
   const tokens = edge.match(/[MCZ]|-?\d*\.?\d+(?:e[-+]?\d+)?/gi)
-  if (!tokens) throw new Error("Missing leaf outline for veins")
+  if (!tokens) throw new Error("Missing leaf outline")
   const boundary: Point[] = []
   let cursor = { x: 0, y: 0 }
   for (let i = 0; i < tokens.length;) {
@@ -135,6 +134,12 @@ function pinnateVeins(spine: Curve, edge: string, random: () => number, fullBase
       throw new Error(`Unsupported leaf outline command: ${command}`)
     }
   }
+  return boundary
+}
+
+// Pinnate, camptodromous venation guided by the actual outline (Runions et al. 2005; Mündermann et al. 2003).
+function pinnateVeins(spine: Curve, edge: string, random: () => number, fullBase: boolean, scale = 1): Vein[] {
+  const boundary = leafBoundary(edge)
   const tipY = spine[3].y
   const margin = (side: number, y: number) => {
     const axis = spineAtY(spine, y).x
@@ -174,9 +179,10 @@ function pinnateVeins(spine: Curve, edge: string, random: () => number, fullBase
   return veins
 }
 
-export function leafAnatomy(seed: number, label: string) {
+export function leafAnatomy(seed: number, label: string, family?: typeof LEAF_FAMILIES[number]) {
   const random = sceneRandom(seed, `anatomy:${label}`)
-  const kind = seed === 0 ? 0 : Math.floor(random() * 4)
+  const generatedKind = seed === 0 ? 0 : Math.floor(random() * 4)
+  const kind = family === undefined ? generatedKind : LEAF_FAMILIES.indexOf(family)
   const width = seed === 0 ? 23 : [30, 25, 36, 34][kind] * (0.92 + random() * 0.2)
   const bend = seed === 0 ? 4 : (random() - 0.5) * 16
   const spine: Curve = seed === 0 ? LEAF_SPINE : [{ x: 0, y: 0 }, { x: bend * 0.3 - 3, y: -29 }, { x: bend, y: -69 }, { x: bend * 0.5, y: -104 }]
@@ -194,9 +200,12 @@ export function leafAnatomy(seed: number, label: string) {
   }
 }
 
-export function monsteraAnatomy(seed: number, label: string, maturity: number, holes: MonsteraHole[]) {
+export function monsteraAnatomy(seed: number, label: string, maturity: number, holes: MonsteraHole[], splitCount?: number) {
+  if (splitCount !== undefined && (!Number.isInteger(splitCount) || splitCount < MONSTERA_AGE.min || splitCount > MONSTERA_AGE.max)) {
+    throw new RangeError(`Monstera split count must be between ${MONSTERA_AGE.min} and ${MONSTERA_AGE.max}`)
+  }
   const random = sceneRandom(seed, label)
-  const splits = maturity < BLOOM_COMPOSITION.monstera.juvenileMaturity ? 0 : 2 + Math.floor(maturity * 2)
+  const splits = splitCount ?? (maturity < BLOOM_COMPOSITION.monstera.juvenileMaturity ? 0 : 2 + Math.floor(maturity * 2))
   // Broad curved lobes and rounded incisions keep a heart-shaped blade, not a sawtooth edge.
   const side = (direction: number): Curve[] => {
     const breadth = 50 + random() * 6
@@ -259,6 +268,10 @@ export function monsteraAnatomy(seed: number, label: string, maturity: number, h
   return { edge, holes: placed, maturity, splits, veins }
 }
 
+export function grassBladeGeometry(curve: Curve, width: number, fill: string) {
+  return { d: veinRibbon(curve, width, 0.04), spine: curvePath(curve), fill }
+}
+
 export function groundGeometry(seed: number) {
   const character = gardenCharacter(seed)
   const random = sceneRandom(seed, "ground")
@@ -302,7 +315,7 @@ export function groundGeometry(seed: number) {
         { x: root.x + spread * 0.65 + lean, y: y - length * 0.82 },
         { x: root.x + spread + lean, y: y - length },
       ]
-      return { d: veinRibbon(curve, 2.2 + random() * 2.2, 0.04), spine: curvePath(curve), fill: BLOOM_PIGMENTS.ground.grasses[Math.floor(random() * BLOOM_PIGMENTS.ground.grasses.length)] }
+      return grassBladeGeometry(curve, 2.2 + random() * 2.2, BLOOM_PIGMENTS.ground.grasses[Math.floor(random() * BLOOM_PIGMENTS.ground.grasses.length)])
     })
     return { x, y, blades }
   })
@@ -353,10 +366,10 @@ export function flowerTraits(seed: number, identity: string) {
 }
 
 // Individually shaped, flat petals overlap at the base; no posture/depth projection.
-export function botanicalPetals(shape: BloomShape, family: typeof PETAL_FAMILIES[number], individuality: number, opening: number) {
+export function botanicalPetals(shape: BloomShape, family: typeof PETAL_FAMILIES[number], individuality: number, opening: number, lengthScale = 1) {
   return Array.from({ length: shape.petals }, (_, i) => {
     const variation = Math.sin(i * 2.39 + 0.8)
-    const length = (132 + variation * 12 * individuality) * opening
+    const length = (132 + variation * 12 * individuality) * opening * lengthScale
     const width = Math.min(84, 139 * Math.sin(Math.PI / shape.petals))
       * (1.12 - shape.bulge * 0.48) * (1.15 - shape.round * 0.14)
     const lean = Math.cos(i * 1.71) * 12 * individuality

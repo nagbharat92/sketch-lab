@@ -149,32 +149,23 @@ export function JustifiedParagraph({ children, className, justify = true, dropCa
 
     const preparedKey = `${bodyText}|${typography}`
     if (preparedRef.current?.key !== preparedKey) {
-      let measured: Prepared
-      if (deferred) {
-        // Insert every probe before reading widths: one layout, not one per word.
-        const fragments = new Set<string>()
-        prepare(bodyText, (fragment) => { fragments.add(fragment); return 1 })
-        const spans = [...fragments].map((fragment) => {
-          const span = document.createElement("span")
-          span.style.display = "inline-block"
-          span.textContent = fragment
-          return span
-        })
-        probe.replaceChildren(...spans)
-        const widths = new Map(spans.map((span) => [span.textContent, span.getBoundingClientRect().width]))
-        measured = prepare(bodyText, (fragment) => {
-          const width = widths.get(fragment)
-          if (width === undefined) throw new Error(`Missing text measurement: ${fragment}`)
-          return width
-        })
-        probe.replaceChildren()
-      } else {
-        measured = prepare(bodyText, (fragment) => {
-          probe.textContent = fragment
-          return probe.getBoundingClientRect().width
-        })
-        probe.textContent = ""
-      }
+      // Batch probes for every paragraph, including studies mounted while scrolling.
+      const fragments = new Set<string>()
+      prepare(bodyText, (fragment) => { fragments.add(fragment); return 1 })
+      const spans = [...fragments].map((fragment) => {
+        const span = document.createElement("span")
+        span.style.display = "inline-block"
+        span.textContent = fragment
+        return span
+      })
+      probe.replaceChildren(...spans)
+      const widths = new Map(spans.map((span) => [span.textContent, span.getBoundingClientRect().width]))
+      const measured = prepare(bodyText, (fragment) => {
+        const width = widths.get(fragment)
+        if (width === undefined) throw new Error(`Missing text measurement: ${fragment}`)
+        return width
+      })
+      probe.replaceChildren()
       preparedRef.current = { key: preparedKey, paragraph: measured }
     }
 
@@ -210,7 +201,7 @@ export function JustifiedParagraph({ children, className, justify = true, dropCa
         }
       }),
     })
-  }, [compatible, text, bodyText, dropCap, dropCapArtwork, policy, deferred, setLayout])
+  }, [compatible, text, bodyText, dropCap, dropCapArtwork, policy, setLayout])
 
   // Also catches inherited Type-lab font/style changes on React commits.
   useLayoutEffect(() => { if (!deferred) refresh() })

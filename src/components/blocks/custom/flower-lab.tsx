@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react"
 import { motion, useAnimationControls } from "framer-motion"
 import { FadeInUp } from "@/components/ui/fade-in-up"
 import { BloomIllustration } from "@/components/lab/bloom-illustration"
+import { BloomFlowerStudy } from "@/components/lab/bloom-flower-study"
+import { BloomBotanicalStudies } from "@/components/lab/bloom-botanical-studies"
+import { DeferredBloomStudy } from "@/components/lab/deferred-bloom-study"
+import { BloomIntroParagraph } from "@/components/lab/bloom-intro-paragraph"
 import { Bloom } from "@/components/lab/color-swatch"
 import { DEFAULT_BLOOM } from "@/lib/bloom"
 import { growBloom, initialBloomState } from "@/components/lab/bloom-state"
@@ -36,23 +40,15 @@ function useHoverInk() {
   }
 }
 
-const BLOOM_INITIAL = {
-  aspectRatio: 44 / 64,
-  glyph: (
-    <svg viewBox="0 0 44 64" width="100%" height="100%" focusable="false" aria-hidden="true">
-      <path fill="currentColor" d="M4 1 C14 -0.5 31 0 40 1 Q44 1 43 5 L42 10 Q42 13 38 13 L30 13 C29 24 30 40 29 51 L39 51 Q43 51 43 55 L44 60 Q44 64 40 64 C28 63 15 64 4 63 Q0 63 1 59 L1 55 Q1 51 5 51 L14 51 C15 39 14 25 15 13 L5 13 Q1 13 1 9 L0 5 Q0 1 4 1 Z" />
-    </svg>
-  ),
-}
-
 export function FlowerLab({ index }: FlowerLabProps) {
   const [preparing, setPreparing] = useState(false)
-  const [introFinished, setIntroFinished] = useState(false)
   const [firstReady, setFirstReady] = useState(false)
   const [secondReady, setSecondReady] = useState(false)
+  const [artReady, setArtReady] = useState(false)
   const firstDone = useCallback(() => setFirstReady(true), [])
   const secondDone = useCallback(() => setSecondReady(true), [])
-  const ready = introFinished && firstReady && secondReady
+  const artDone = useCallback(() => setArtReady(true), [])
+  const ready = firstReady && secondReady && artReady
 
   useEffect(() => {
     let secondFrame = 0
@@ -60,11 +56,9 @@ export function FlowerLab({ index }: FlowerLabProps) {
     const firstFrame = requestAnimationFrame(() => {
       secondFrame = requestAnimationFrame(() => setPreparing(true))
     })
-    const timer = window.setTimeout(() => setIntroFinished(true), 2000)
     return () => {
       cancelAnimationFrame(firstFrame)
       cancelAnimationFrame(secondFrame)
-      window.clearTimeout(timer)
     }
   }, [])
 
@@ -77,14 +71,18 @@ export function FlowerLab({ index }: FlowerLabProps) {
         </div>
       )}
       <div inert={!ready} aria-hidden={!ready}>
-        {preparing && <Garden index={index} firstDone={firstDone} secondDone={secondDone} />}
+        {preparing && <Garden index={index} firstDone={firstDone} secondDone={secondDone} artDone={artDone} />}
+        {ready && <>
+          <DeferredBloomStudy label="The flower"><BloomFlowerStudy /></DeferredBloomStudy>
+          <BloomBotanicalStudies />
+        </>}
       </div>
     </div>
   )
 }
 
-function Garden({ index, firstDone, secondDone }: {
-  index: number; firstDone: () => void; secondDone: () => void
+function Garden({ index, firstDone, secondDone, artDone }: {
+  index: number; firstDone: () => void; secondDone: () => void; artDone: () => void
 }) {
   const [bloom, setBloom] = useState(initialBloomState)
   const { sceneSeed, garden, colorIndex } = bloom
@@ -109,9 +107,9 @@ function Garden({ index, firstDone, secondDone }: {
     <article aria-label="Bloom: a generative garden" className="bloom-page" style={BLOOM_SCENE_STYLE}>
       <div className="bloom-editorial">
         <FadeInUp i={index}>
-          <JustifiedParagraph deferred onReady={firstDone} dropCap dropCapArtwork={BLOOM_INITIAL} policy={BLOOM_PROSE_POLICY} className="bloom-story">
+          <BloomIntroParagraph deferred onReady={firstDone}>
             I started with a single flower and kept experimenting with its shape, colour and movement. Now it is a whole garden, drawn in code. Each click creates a new arrangement of flowers and foliage.
-          </JustifiedParagraph>
+          </BloomIntroParagraph>
           <JustifiedParagraph deferred onReady={secondDone} policy={BLOOM_PROSE_POLICY} className="bloom-story">
             The garden follows rules for plant size, branching and spacing. Taller blooms lead; smaller flowers and monsteras fill the gaps. I generate the leaf shapes, veins and ground details in code, then add a gentle ink wiggle.
           </JustifiedParagraph>
@@ -133,7 +131,7 @@ function Garden({ index, firstDone, secondDone }: {
       </div>
       <div className="bloom-art-column">
         <figure aria-label="Your bloom" className="bloom-artwork">
-          <BloomIllustration {...bloom} fill={color.color} animated />
+          <BloomIllustration {...bloom} fill={color.color} animated onReady={artDone} />
           <span role="status" className="sr-only">Garden {sceneSeed + 1}: {garden.flowers.length + 1} flowers and {garden.monsteras.length} monsteras, with a {color.name.toLowerCase()} king bloom.</span>
         </figure>
       </div>

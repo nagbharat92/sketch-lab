@@ -390,6 +390,11 @@
   to { transform: rotate(var(--bloom-ladybird-hello-end)); }
 }
 
+.bloom-illustration[data-animated="false"],
+.bloom-illustration[data-animated="false"] * {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bloom-illustration {
     animation: none;

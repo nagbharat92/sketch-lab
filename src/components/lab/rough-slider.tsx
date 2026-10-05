@@ -6,6 +6,10 @@ import { BOIL_BOWING, useBoilSeed } from "@/hooks/use-boil-seed"
 interface RoughSliderProps {
   /** Control label, shown top-left and used as the accessible name. */
   label: string
+  showValue?: boolean
+  /** Omit the visible label row; the label remains the slider's accessible name. */
+  bare?: boolean
+  disabled?: boolean
   value: number
   min: number
   max: number
@@ -94,6 +98,9 @@ function usePrefersReducedMotion() {
  */
 export function RoughSlider({
   label,
+  showValue = true,
+  bare = false,
+  disabled = false,
   value,
   min,
   max,
@@ -131,7 +138,7 @@ export function RoughSlider({
   // Pop + boil only while pointing at (or pressing) the knob — never on keyboard
   // focus — and never under reduced-motion. On mouse-exit both flags clear, so
   // the knob snaps its seed/bowing back and springs down to its resting size.
-  const animate = (hovered || dragging) && !prefersReduced
+  const animate = !disabled && (hovered || dragging) && !prefersReduced
   // The knob outline "boils" like the Motion page: its seed advances on the same
   // 0.2s/8-frame cadence and it draws with the curvier animated-stroke bowing.
   const thumbSeed = useBoilSeed(seed + 1, animate)
@@ -157,6 +164,7 @@ export function RoughSlider({
   const thumbX = thumbMinX + fraction * (thumbMaxX - thumbMinX)
 
   const setFromClientX = (clientX: number) => {
+    if (disabled) return
     const el = trackRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
@@ -165,6 +173,7 @@ export function RoughSlider({
   }
 
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (disabled) return
     setDragging(true)
     setFromClientX(e.clientX)
     // Pointer capture keeps a drag tracking when the pointer leaves the control.
@@ -177,7 +186,7 @@ export function RoughSlider({
     }
   }
   const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (dragging) setFromClientX(e.clientX)
+    if (dragging && !disabled) setFromClientX(e.clientX)
   }
   const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
     setDragging(false)
@@ -189,6 +198,7 @@ export function RoughSlider({
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) return
     let next: number
     switch (e.key) {
       case "ArrowRight":
@@ -218,21 +228,24 @@ export function RoughSlider({
     onChange(snap(next))
   }
 
-  const active = dragging || focused
+  const active = !disabled && (dragging || focused)
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="flex items-baseline justify-between">
-        <span className="text-sm font-medium text-foreground">{label}</span>
-        <span className="text-sm tabular-nums text-muted-foreground">
-          {format ? format(value) : value}
-        </span>
-      </div>
+    <div className={`flex w-full flex-col gap-2${disabled ? " opacity-40" : ""}`}>
+      {!bare && (
+        <div className="flex items-baseline justify-between">
+          <span className="text-sm font-medium text-foreground">{label}</span>
+          <span className={showValue ? "text-sm tabular-nums text-muted-foreground" : "sr-only"}>
+            {format ? format(value) : value}
+          </span>
+        </div>
+      )}
 
       <div
         ref={trackRef}
         role="slider"
-        tabIndex={0}
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled || undefined}
         aria-label={label}
         aria-valuemin={min}
         aria-valuemax={max}
@@ -241,13 +254,13 @@ export function RoughSlider({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerEnter={() => setHovered(true)}
+        onPointerEnter={() => setHovered(!disabled)}
         onPointerLeave={() => setHovered(false)}
         onKeyDown={handleKeyDown}
-        onFocus={() => setFocused(true)}
+        onFocus={() => setFocused(!disabled)}
         onBlur={() => setFocused(false)}
         className={`relative touch-none select-none outline-none ${
-          dragging ? "cursor-grabbing" : "cursor-pointer"
+          disabled ? "cursor-not-allowed" : dragging ? "cursor-grabbing" : "cursor-pointer"
         }`}
       >
         <svg
@@ -373,7 +386,7 @@ export function RoughSlider({
                 <circle
                   r={THUMB_R}
                   className="transition-opacity duration-150"
-                  style={{ fill: "var(--color-foreground)", opacity: dragging ? 1 : hovered ? 0.7 : 0 }}
+                  style={{ fill: "var(--color-foreground)", opacity: disabled ? 0 : dragging ? 1 : hovered ? 0.7 : 0 }}
                 />
               )}
               <g fill="none" stroke="currentColor" strokeWidth={STROKE_WIDTH} strokeLinecap="round">

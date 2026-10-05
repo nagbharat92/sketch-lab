@@ -39,7 +39,10 @@ export const BLOOM_PIGMENTS = {
     creamLight: "#F2F0D8", creamDark: "#DAE4CC", fold: "#43656B",
     veins: "#DDE8D5", veinOpacity: [0.85, 0.62, 0.3],
   },
-  ladybird: { light: "#F69871", middle: "#D95540", dark: "#9C3D31", underside: "#203D30" },
+  ladybird: {
+    light: "#F69871", middle: "#D95540", dark: "#9C3D31", underside: "#203D30",
+    black: "#292923", cream: "#FFF0CE", amber: "#9E753B", lemon: "#EEDD86",
+  },
   ground: {
     soil: "#CAB58A", grasses: ["#718756", "#A5AF72", "#698652"],
     grassOutline: "#465F40", grassVein: "#D0D6A0", pod: "#AC956C", podOutline: "#6D6148",
@@ -63,7 +66,7 @@ export const GARDEN_ROLES = {
 export const BLOOM_SCENE = {
   width: 540, height: 620, baseline: 566, centerX: 270, rootX: 285,
   flowerSize: 340, flowerCenter: 170, pollenCenterY: 167, centerRadius: 120,
-  leafWidth: 48, leafLength: 104, monsteraLength: 132,
+  leafWidth: 48, leafLength: 104, monsteraLength: 132, monsteraAttachmentHeight: 116,
   mask: { x: -80, y: -150, width: 160, height: 155 },
 } as const
 
@@ -94,8 +97,91 @@ export const BLOOM_DEFAULTS = {
 } as const
 
 export const VARIEGATION_PATTERNS = ["marbled", "tips", "streaks", "patches"] as const
+export const MONSTERA_AGE = { min: 0, max: 5, step: 1 } as const
+export const MONSTERA_MARKINGS = ["plain", ...VARIEGATION_PATTERNS] as const
+export const LEAF_MARKINGS = ["plain", ...VARIEGATION_PATTERNS] as const
 export const PETAL_FAMILIES = ["rounded", "pointed", "curled", "ruffled"] as const
 export const POLLEN_TEXTURES = ["spiral", "rings", "speckled"] as const
+export const LEAF_FAMILIES = ["broad", "lance", "heart", "oval"] as const
+
+export const BLOOM_STUDY_MOTION = {
+  displacement: 0.65,
+  settleDuration: "460ms",
+  swayDuration: "8s",
+} as const
+
+export const MONSTERA_STUDY_SHADOW = {
+  x: 5.5, y: 6.5, opacity: 0.16, darkOpacity: 0.25,
+  blur: 1.3,
+} as const
+
+export const MONSTERA_STUDY_STALK = {
+  viewBox: { x: -105, y: -115, width: 210, height: 240 },
+  angle: [158, 202], anchorX: [-10, 10], anchorY: [-66, -54],
+  rootY: [94, 110], rootSpread: [18, 48],
+  width: [3.4, 4.8], tipWidth: [1.8, 2.4],
+  inkWidth: 0.55, roughness: 0.35, bowing: 0.35,
+} as const
+
+export const MONSTERA_STUDY_FRAME = {
+  padding: 20, aspectRatio: 0.9,
+} as const
+
+export const MONSTERA_GARDEN_POSE = {
+  lean: [14, 36], verticalInset: 12,
+} as const
+
+export const MONSTERA_STUDY_VARIEGATION_OUTLINE = {
+  width: 0.45, opacity: 0.65,
+  roughness: 0.45, bowing: 0.35, seedStep: 17,
+} as const
+
+export const MONSTERA_STUDY_VARIEGATION_COLOR = {
+  ivory: "#F5F1E6", pink: "#E08FA4",
+  ivoryOutline: "#A4AF8B", pinkOutline: "#AD657D",
+  frequency: [1.8, 3], minIslandArea: 5,
+  endpointChance: 0.12,
+} as const
+
+export const MONSTERA_STUDY_VARIEGATION_AGE = {
+  ivoryGrowth: 0.08, pinkDevelopment: 0.04,
+} as const
+
+export const MONSTERA_STUDY_COLOR = {
+  hue: 140,
+  saturation: [18, 28],
+  lightness: [64, 34],
+  highlight: { saturation: -8, lightness: 14 },
+  deep: { saturation: 4, lightness: -12 },
+  shadow: { saturation: 22, lightness: [17, 12] },
+} as const
+
+export const FLOWER_STUDY = {
+  petals: { min: 3, max: 12, step: 1 },
+  length: { min: 70, max: 115, step: 5 },
+  center: { min: 15, max: 45, step: 1 },
+  viewBox: "-15 -15 370 370",
+} as const
+
+export const LEAF_STUDY = {
+  viewBox: "-65 -115 130 130",
+  width: { min: 85, max: 120, step: 5 },
+  coverage: { min: 0, max: 100, step: 5 },
+  previewCoverage: 0.35,
+  markingRounding: 4,
+} as const
+
+// One thin side-on soil strip on the garden's own baseline, so it can return to the garden.
+export const GROUND_STUDY = {
+  viewBox: "100 482 340 104",
+  base: 566, left: 108, right: 432, center: 270, depth: 8, taper: 56, wave: 1.6, lift: 2,
+  tufts: [5, 8], spacing: 14, inset: 44,
+  grassHeights: { short: [10, 18], medium: [20, 32], tall: [36, 54] },
+  mound: { height: [2.5, 4.5], width: [8, 12] },
+  stones: [1, 3], leaves: [3, 6], twigs: [0, 1],
+  soil: { top: "#CDB58B", bottom: "#A98C62" },
+  litterColors: ["#C9A64F", "#C88A43", "#A16D42", "#77543D", "#564334"],
+} as const
 
 export const BLOOM_OUTLINE = {
   bowing: 0.5,
