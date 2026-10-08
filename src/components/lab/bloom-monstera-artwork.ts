@@ -52,6 +52,9 @@ export function createMonsteraArtwork(seed: number, age: number, markings: typeo
 }
 
 export type MonsteraRecipePlant = Pick<MonsteraPlant, "id" | "role" | "maturity" | "splitCount" | "anatomySeed">
+/** What the reader changed about one monstera. Kept structural so the worker stays self-contained. */
+export type MonsteraEdit = { age?: number; markings?: MonsteraArtwork["markings"]; coverage?: number }
+export type GardenMonsteraRequest = MonsteraRecipePlant & { edit?: MonsteraEdit }
 
 export function gardenMonsteraRecipe(sceneSeed: number, plant: MonsteraRecipePlant) {
   const seed = plant.anatomySeed
@@ -63,7 +66,7 @@ export function gardenMonsteraRecipe(sceneSeed: number, plant: MonsteraRecipePla
 
 export type GardenMonsteraArtwork = { id: string; artwork: MonsteraArtwork }
 export type MonsteraWorkerInput =
-  | { kind: "garden"; seed: number; plants: MonsteraRecipePlant[] }
+  | { kind: "garden"; seed: number; plants: GardenMonsteraRequest[] }
   | { kind: "study"; seed: number; age: number; markings: MonsteraArtwork["markings"]; coverage?: number; previewSeed?: number }
 export type MonsteraWorkerRequest = MonsteraWorkerInput & { id: number }
 export type MonsteraWorkerResponse =
@@ -71,9 +74,13 @@ export type MonsteraWorkerResponse =
   | { id: number; artwork: MonsteraArtwork; previews?: MonsteraArtwork[] }
   | { id: number; error: string }
 
-export function prepareGardenMonsteras(seed: number, plants: MonsteraRecipePlant[]): GardenMonsteraArtwork[] {
+export function prepareGardenMonsteras(seed: number, plants: GardenMonsteraRequest[]): GardenMonsteraArtwork[] {
   return plants.map((plant) => {
     const recipe = gardenMonsteraRecipe(seed, plant)
-    return { id: plant.id, artwork: createMonsteraArtwork(recipe.seed, recipe.age, recipe.markings) }
+    const age = plant.edit?.age ?? recipe.age
+    const markings = plant.edit?.markings ?? recipe.markings
+    // Coverage only means something once there is material to cover.
+    const coverage = markings === "plain" ? undefined : plant.edit?.coverage
+    return { id: plant.id, artwork: createMonsteraArtwork(recipe.seed, age, markings, coverage) }
   })
 }

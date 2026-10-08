@@ -4,6 +4,8 @@ import { gardenCharacter } from "./bloom-garden"
 import { monsteraBladeTransform, type MonsteraBladeFrame, type MonsteraPetiole } from "./bloom-monstera-pose"
 import { monsteraStudyPalette } from "./bloom-study-state"
 import { monsteraInk } from "./bloom-monstera-ink"
+import { SelectionHalo, type HaloState } from "./bloom-halo"
+import { BloomHoverGrow } from "./bloom-hover-grow"
 import { BLOOM_PIGMENTS, MONSTERA_STUDY_VARIEGATION_COLOR, MONSTERA_STUDY_VARIEGATION_OUTLINE } from "./bloom-tokens"
 
 export type { MonsteraPetiole } from "./bloom-monstera-pose"
@@ -63,14 +65,18 @@ const Holes = memo(function Holes({ artwork, id }: { artwork: MonsteraArtwork; i
   )
 })
 
-export function OrganicMonsteraDrawing({ artwork, inkSeed, frame, petiole, lightness = 0, follow = false, lightX }: {
+export function OrganicMonsteraDrawing({ artwork, inkSeed, frame, petiole, lightness = 0, follow = false, lightX, halo, inkFilter }: {
   artwork: MonsteraArtwork; inkSeed: number; frame: MonsteraBladeFrame; petiole?: MonsteraPetiole; lightness?: number; follow?: boolean; lightX?: number
+  halo?: HaloState
+  inkFilter?: string
 }) {
   const id = useId().replace(/:/g, "")
   const colors = useMemo(() => monsteraStudyPalette(artwork.age, lightness), [artwork.age, lightness])
   const character = useMemo(() => gardenCharacter(artwork.seed), [artwork.seed])
   const ink = useMemo(() => monsteraInk(artwork, petiole, inkSeed), [artwork, petiole, inkSeed])
   const transform = useMemo(() => monsteraBladeTransform(frame), [frame])
+  const bladeHalo = useMemo(() => [artwork.anatomy.edge], [artwork.anatomy.edge])
+  const stalkHalo = useMemo(() => petiole ? [petiole.outline] : [], [petiole])
   if (petiole && (petiole.end.x !== frame.attachment.x || petiole.end.y !== frame.attachment.y)) {
     throw new Error("Monstera blade frame must attach to its petiole endpoint")
   }
@@ -79,15 +85,21 @@ export function OrganicMonsteraDrawing({ artwork, inkSeed, frame, petiole, light
       <Definitions id={id} artwork={artwork} colors={colors} lightX={lightX ?? character.lightX} />
       {petiole && (
         <g data-monstera-stalk="true">
+          <SelectionHalo paths={stalkHalo} state={halo} />
+          <g filter={inkFilter}>
           <path d={petiole.outline} fill={colors.dark} />
           <ellipse cx={petiole.end.x} cy={petiole.end.y + 0.8} rx={petiole.tipWidth * 0.6} ry={petiole.tipWidth} fill={colors.dark} data-petiole-joint="true" />
           <g fill="none" opacity={0.65} strokeLinecap="round" strokeLinejoin="round">
             {ink.stalk.map((path, i) => <path key={i} d={path.d} stroke={path.stroke} strokeWidth={path.strokeWidth} />)}
           </g>
+          </g>
         </g>
       )}
       <g transform={transform} data-leaf-frame={Math.cos(frame.rotation * Math.PI / 180) < 0 ? "hanging" : "upright"}>
         <g className={follow ? "bloom-leaf-follow" : undefined}>
+        <BloomHoverGrow state={halo}>
+        <SelectionHalo paths={bladeHalo} state={halo} />
+        <g filter={inkFilter}>
         <g mask={`url(#study-cut-${id})`}>
           <Materials artwork={artwork} id={id} />
           <g clipPath={`url(#study-variegation-${id})`} fill="none" opacity={MONSTERA_STUDY_VARIEGATION_OUTLINE.opacity} strokeLinecap="round" strokeLinejoin="round" data-pink-outline="true">
@@ -102,6 +114,8 @@ export function OrganicMonsteraDrawing({ artwork, inkSeed, frame, petiole, light
           {ink.leaf.map((path, i) => <path key={i} d={path.d} stroke={path.stroke} strokeWidth={path.strokeWidth} vectorEffect="non-scaling-stroke" />)}
         </g>
         <Holes artwork={artwork} id={id} />
+        </g>
+        </BloomHoverGrow>
         </g>
       </g>
     </g>

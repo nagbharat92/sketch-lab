@@ -1,16 +1,19 @@
 import { flowerTraits, leafAnatomy } from "./bloom-geometry.ts"
 import { sceneRandom, studySeed } from "./bloom-math.ts"
-import { createLadybirdAppearance } from "./bloom-ladybird-geometry.ts"
+import { createLadybirdAppearance, LADYBIRD_VARIETIES } from "./bloom-ladybird-geometry.ts"
 import { ladybirdLanding } from "./bloom-ladybird-study-state.ts"
-import { BLOOM_SCENE, FLOWER_STUDY, GROUND_STUDY, LEAF_FAMILIES, VARIEGATION_PATTERNS, type LEAF_MARKINGS } from "./bloom-tokens.ts"
+import { BLOOM_COMPOSITION, BLOOM_SCENE, FLOWER_STUDY, GROUND_STUDY, LEAF_FAMILIES, VARIEGATION_PATTERNS, type LEAF_MARKINGS } from "./bloom-tokens.ts"
 import type { GardenScene } from "./bloom-garden.ts"
 
 export function gardenGroundExtent(garden: GardenScene) {
   const roots = [garden.king.curve[0], ...garden.flowers.map((plant) => plant.curve[0]),
     ...garden.monsteras.map((plant) => plant.root), garden.vine[0]]
+  const halfWidth = Math.min(BLOOM_COMPOSITION.bed.maxWidth / 2,
+    Math.max((GROUND_STUDY.right - GROUND_STUDY.left) / 2,
+      ...roots.map((root) => Math.abs(root.x - BLOOM_SCENE.centerX) + GROUND_STUDY.taper)))
   return {
-    left: Math.max(18, Math.min(GROUND_STUDY.left, ...roots.map((root) => root.x - GROUND_STUDY.taper))),
-    right: Math.min(BLOOM_SCENE.width - 18, Math.max(GROUND_STUDY.right, ...roots.map((root) => root.x + GROUND_STUDY.taper))),
+    left: BLOOM_SCENE.centerX - halfWidth,
+    right: BLOOM_SCENE.centerX + halfWidth,
   }
 }
 
@@ -31,9 +34,13 @@ export function gardenLeafRecipe(seed: number, label: string, defaultVariegated 
     markingSeed: studySeed(seed % 4294967296 + 1, `garden-leaf-markings:${label}`) }
 }
 
-export function gardenLadybird(seed: number, label: string, family?: typeof LEAF_FAMILIES[number]) {
+export function gardenLadybird(seed: number, label: string, family?: typeof LEAF_FAMILIES[number], override?: { variety?: string; seed?: number }) {
   const anatomy = leafAnatomy(seed, label, family)
-  const appearance = createLadybirdAppearance(studySeed(seed % 4294967296 + 1, `garden-ladybird:${label}`))
-  const random = sceneRandom(seed, `garden-ladybird-landing:${label}`)
+  const chosen = override?.variety === undefined ? undefined
+    : LADYBIRD_VARIETIES.find((variety) => variety.id === override.variety)
+  if (override?.variety !== undefined && !chosen) throw new RangeError(`Unknown ladybird variety: ${override.variety}`)
+  const appearanceSeed = override?.seed ?? studySeed(seed % 4294967296 + 1, `garden-ladybird:${label}`)
+  const appearance = createLadybirdAppearance(appearanceSeed, chosen)
+  const random = sceneRandom(override?.seed ?? seed, `garden-ladybird-landing:${label}`)
   return { ...ladybirdLanding(anatomy, appearance, random), angle: random() * 360 }
 }

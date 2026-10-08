@@ -23,6 +23,222 @@ import { createLadybirdAppearance, LADYBIRD_VARIETIES } from "../src/components/
 import { boundaryClearance, pointInsidePolygon } from "../src/components/lab/bloom-math.ts"
 import { leafBoundary } from "../src/components/lab/bloom-geometry.ts"
 import { gardenFlowerRecipe, gardenGroundExtent, gardenLadybird, gardenLeafRecipe } from "../src/components/lab/bloom-garden-botany.ts"
+import { FLOWER_PALETTE, isOverridden, NO_OVERRIDES, overriddenCount, overrideFor, randomizedOverride, SELECTION_KINDS, sameSelection, withOverride, withoutOverride } from "../src/components/lab/bloom-selection.ts"
+import { prepareGardenMonsteras as prepareMonsteras } from "../src/components/lab/bloom-monstera-artwork.ts"
+import { gardenStickerPaint, gardenStickerPalette, STICKER_CURSOR_INK, STICKER_PALETTES, stickerContrast } from "../src/components/lab/bloom-sticker-colors.ts"
+import { stickerSizeFactor } from "../src/components/lab/bloom-sticker-size.ts"
+import { createBloomHoverStore } from "../src/components/lab/bloom-hover-store.ts"
+import { composeGardenMonsteras, gardenCompositionMetrics } from "../src/components/lab/bloom-monstera-composition.ts"
+
+const SELECTIONS = [
+  { kind: "flower", id: "king" }, { kind: "monstera", id: "monstera-0" },
+  { kind: "leaf", id: "leaf:1:2:3" }, { kind: "bud", id: "bud:4:5" },
+  { kind: "ground", id: "ground" }, { kind: "ladybird", id: "ladybird" },
+]
+
+test("hover notifications stay local, skip repeated targets and clean up subscriptions", () => {
+  const store = createBloomHoverStore()
+  let calls = 0
+  const unsubscribe = store.subscribe(() => { calls++ })
+  store.set(SELECTIONS[0])
+  store.set({ ...SELECTIONS[0] })
+  assert.equal(calls, 1)
+  assert.deepEqual(store.get(), SELECTIONS[0])
+  store.set(SELECTIONS[1])
+  store.set(undefined)
+  store.set(undefined)
+  assert.equal(calls, 3)
+  assert.equal(store.get(), undefined)
+  unsubscribe()
+  store.set(SELECTIONS[0])
+  assert.equal(calls, 3)
+})
+
+test("sticker borders gently increase with artwork size and remain bounded", () => {
+  const sizes = [8, 20, 45, 80, 150, 260, 500, 2000]
+  const factors = sizes.map((size) => stickerSizeFactor(size, size))
+  assert.equal(factors[0], 0.4)
+  assert.equal(stickerSizeFactor(260, 260), 1)
+  assert.equal(factors.at(-1), 1.1)
+  assert(factors.every((factor, i) => i === 0 || factor >= factors[i - 1]))
+  assert(stickerSizeFactor(400, 10) < stickerSizeFactor(200, 200), "Thin stalks need thinner paper than broad leaves")
+  assert.equal(stickerSizeFactor(80, 150), stickerSizeFactor(150, 80))
+  for (const size of [0, -1, NaN, Infinity]) assert.throws(() => stickerSizeFactor(size, 100), RangeError)
+})
+
+test("sticker shades stay bright with strong dark-ink and dark-theme contrast", () => {
+  for (const palette of STICKER_PALETTES) {
+    assert.deepEqual(Object.keys(palette), ["butter", "lilac", "peach", "sky"])
+    for (const color of Object.values(palette)) {
+      for (const background of ["#16171D", STICKER_CURSOR_INK]) {
+        assert(stickerContrast(color, background) >= 5, `${color} needs 5:1 contrast against ${background}`)
+      }
+      assert(stickerContrast(color, "#000000") >= 10, `${color} must remain a light pastel`)
+    }
+  }
+  assert.equal(stickerContrast("#FFFFFF", "#000000"), 21)
+  assert.throws(() => stickerContrast("transparent", "#FFFFFF"), RangeError)
+})
+
+test("sticker palettes and artwork pairings are stable within each garden", () => {
+  const palettes = new Set()
+  const families = new Set()
+  for (let seed = 0; seed < 48; seed++) {
+    const palette = gardenStickerPalette(seed)
+    palettes.add(JSON.stringify(palette))
+    for (const selection of SELECTIONS) {
+      const paint = gardenStickerPaint(seed, selection)
+      assert.equal(paint.color, palette[paint.family])
+      assert.deepEqual(paint, gardenStickerPaint(seed, { ...selection }))
+      families.add(paint.family)
+    }
+    for (const color of FLOWER_PALETTE) {
+      const paint = gardenStickerPaint(seed, SELECTIONS[0], color)
+      assert.equal(paint.color, palette[paint.family])
+    }
+    assert(["lilac", "sky"].includes(gardenStickerPaint(seed, SELECTIONS[0], "#F3CE46").family))
+    assert(["butter", "peach"].includes(gardenStickerPaint(seed, SELECTIONS[0], "#365CCD").family))
+  }
+  assert.equal(palettes.size, STICKER_PALETTES.length)
+  assert.equal(families.size, 4)
+  for (const seed of [-1, 0.5, NaN, Infinity]) assert.throws(() => gardenStickerPalette(seed), RangeError)
+  assert.throws(() => gardenStickerPaint(0, SELECTIONS[0], "not-a-color"), RangeError)
+})
+
+test("Surprise retains the approved squeeze, dip, rebound and timing", () => {
+  assert.deepEqual(BLOOM_MOTION.press, {
+    scale: [1, 0.96, 1],
+    y: [0, 2, 0],
+    duration: 0.16,
+    times: [0, 0.35, 1],
+  })
+})
+
+test("tending one element never disturbs the others, and every change is reversible", () => {
+  assert.deepEqual(SELECTIONS.map((selection) => selection.kind), [...SELECTION_KINDS])
+  let overrides = NO_OVERRIDES
+  for (let i = 0; i < SELECTIONS.length; i++) {
+    const selection = SELECTIONS[i]
+    const before = structuredClone(overrides)
+    const random = sceneRandom(i + 1, `surprise:${selection.kind}`)
+    const change = randomizedOverride(selection, random, i + 1)
+    overrides = withOverride(overrides, selection, change)
+    assert.deepEqual(before, structuredClone(before), "Override maps must not be mutated in place")
+    assert.notDeepEqual(overrides, before)
+    assert(isOverridden(overrides, selection))
+    assert.equal(overriddenCount(overrides), i + 1)
+    // Every other element still reports the garden's own choices.
+    for (const other of SELECTIONS.filter((candidate) => candidate !== selection)) {
+      if (SELECTIONS.indexOf(other) < i) continue
+      assert.deepEqual(overrideFor(overrides, other.kind, other.id), {}, `${other.kind} should be untouched`)
+    }
+  }
+  for (const selection of SELECTIONS) {
+    overrides = withoutOverride(overrides, selection)
+    assert(!isOverridden(overrides, selection))
+  }
+  assert.equal(overriddenCount(overrides), 0)
+  assert(sameSelection(SELECTIONS[0], { kind: "flower", id: "king" }))
+  assert(!sameSelection(SELECTIONS[0], { kind: "flower", id: "general-0" }))
+  assert(!sameSelection(undefined, SELECTIONS[0]))
+})
+
+test("surprises stay inside the controls' own ranges and reject impossible edits", () => {
+  for (let nonce = 1; nonce <= 48; nonce++) {
+    for (const selection of SELECTIONS) {
+      const random = sceneRandom(nonce, `surprise:${selection.kind}:${selection.id}`)
+      const change = randomizedOverride(selection, random, nonce)
+      // Round-tripping through the validator proves every generated value is legal.
+      const stored = overrideFor(withOverride(NO_OVERRIDES, selection, change), selection.kind, selection.id)
+      assert.deepEqual(stored, change, `${selection.kind} surprise produced a value its own controls reject`)
+      if (selection.kind === "flower") {
+        inRange(change.petals, [FLOWER_STUDY.petals.min, FLOWER_STUDY.petals.max])
+        inRange(change.petalLength, [FLOWER_STUDY.length.min / 100, FLOWER_STUDY.length.max / 100])
+        assert(FLOWER_PALETTE.includes(change.color))
+      }
+      if (selection.kind === "monstera") inRange(change.age, [MONSTERA_AGE.min, MONSTERA_AGE.max])
+      if (selection.kind === "leaf" || selection.kind === "monstera") {
+        assert.equal(change.coverage === 0, change[selection.kind === "leaf" ? "pattern" : "markings"] === "plain")
+      }
+      if (selection.kind === "ground") inRange(change.tufts, GROUND_STUDY.tufts)
+    }
+  }
+  for (const nonce of [0, -1, 1.5, NaN]) {
+    assert.throws(() => randomizedOverride(SELECTIONS[0], sceneRandom(1, "x"), nonce), RangeError)
+  }
+  const flower = SELECTIONS[0]
+  for (const bad of [{ petals: 2 }, { petals: 99 }, { petals: 4.5 }, { family: "spiky" }, { color: "#000000" }]) {
+    assert.throws(() => withOverride(NO_OVERRIDES, flower, bad), RangeError)
+  }
+  assert.throws(() => withOverride(NO_OVERRIDES, { kind: "stem", id: "x" }, {}), RangeError)
+  assert.throws(() => withOverride(NO_OVERRIDES, SELECTIONS[1], { age: 9 }), RangeError)
+  assert.throws(() => withOverride(NO_OVERRIDES, SELECTIONS[3], { stage: "wilted" }), RangeError)
+  assert.throws(() => withOverride(NO_OVERRIDES, SELECTIONS[5], { variety: "ghost" }), RangeError)
+})
+
+test("a tended monstera reaches the generator while its neighbours keep the garden's own recipe", () => {
+  const garden = generateGarden(5)
+  const plants = garden.monsteras.map(({ id, role, maturity, splitCount, anatomySeed }) =>
+    ({ id, role, maturity, splitCount, anatomySeed }))
+  const plain = prepareMonsteras(5, plants)
+  const tendedId = plants[1].id
+  const edited = prepareMonsteras(5, plants.map((plant) => plant.id === tendedId
+    ? { ...plant, edit: { age: 5, markings: "patches", coverage: 0.4 } } : plant))
+  for (let i = 0; i < plain.length; i++) {
+    if (plain[i].id === tendedId) continue
+    assert.deepEqual(edited[i], plain[i], "Editing one leaf must not redraw another")
+  }
+  const changed = edited.find((item) => item.id === tendedId).artwork
+  assert.equal(changed.age, 5)
+  assert.equal(changed.markings, "patches")
+  assert.equal(changed.anatomy.cuts.length, 10)
+  assert.equal(changed.seed, plants[1].anatomySeed, "Tending must not reseed the plant's identity")
+  // Clearing the markings drops the material rather than keeping an invisible coverage.
+  const bare = prepareMonsteras(5, plants.map((plant) => plant.id === tendedId
+    ? { ...plant, edit: { markings: "plain", coverage: 0.9 } } : plant))
+  assert.deepEqual(bare.find((item) => item.id === tendedId).artwork.materials.paths, [])
+})
+
+test("choosing a grass count changes only the grass, and the soil keeps its seeded span", () => {
+  const garden = generateGarden(9), extent = gardenGroundExtent(garden)
+  const seeded = groundStudyGeometry(11, extent)
+  for (let grass = GROUND_STUDY.tufts[0]; grass <= GROUND_STUDY.tufts[1]; grass++) {
+    const chosen = groundStudyGeometry(11, extent, grass)
+    assert.equal(chosen.tufts.length, grass)
+    // The crest rides over a mud mound at every tuft, so it follows the grass by design;
+    // what must not move is where the strip begins, ends and meets the baseline.
+    assert.deepEqual([chosen.crestPoints[0], chosen.crestPoints.at(-1)],
+      [seeded.crestPoints[0], seeded.crestPoints.at(-1)])
+    assert.equal(chosen.crestPoints.length, seeded.crestPoints.length)
+    assert.deepEqual(chosen.shadow, seeded.shadow)
+    assert(chosen.tufts.every((tuft) => tuft.x > extent.left && tuft.x < extent.right))
+    assert.deepEqual(chosen, groundStudyGeometry(11, extent, grass))
+    for (let i = 0; i < chosen.footprints.length; i++) {
+      for (const other of chosen.footprints.slice(i + 1)) {
+        if (chosen.footprints[i].kind === "grass" && other.kind === "grass") continue
+        assert(!groundBoundsOverlap(chosen.footprints[i].bounds, other.bounds, 2))
+      }
+    }
+  }
+  for (const grass of [GROUND_STUDY.tufts[0] - 1, GROUND_STUDY.tufts[1] + 1, 5.5, NaN]) {
+    assert.throws(() => groundStudyGeometry(11, extent, grass), RangeError)
+  }
+})
+
+test("choosing a ladybird keeps all six feet on its leaf", () => {
+  for (let seed = 0; seed < 24; seed++) {
+    const label = "leaf:0:0:0"
+    for (const variety of LADYBIRD_VARIETIES) {
+      const resident = gardenLadybird(seed, label, "broad", { variety: variety.id, seed: seed + 1 })
+      assert.equal(resident.appearance.variety.id, variety.id)
+      const boundary = leafBoundary(leafAnatomy(seed, label, "broad").edge)
+      assert(pointInsidePolygon(resident, boundary))
+      assert(boundaryClearance(resident, boundary) > resident.appearance.radius * resident.scale)
+      assert.deepEqual(resident, gardenLadybird(seed, label, "broad", { variety: variety.id, seed: seed + 1 }))
+    }
+  }
+  assert.throws(() => gardenLadybird(1, "leaf:0:0:0", "broad", { variety: "ghost" }), RangeError)
+})
 
 test("main garden reuses study flower and leaf variation without moving the seeded cast", () => {
   const families = new Set(), patterns = new Set(), petals = new Set(), lengths = new Set()
@@ -63,6 +279,9 @@ test("garden soil stays a single thin strip covering every plant root", () => {
   for (let seed = 0; seed < 32; seed++) {
     const garden = generateGarden(seed), extent = gardenGroundExtent(garden)
     const ground = groundStudyGeometry(seed, extent)
+    assert.equal((extent.left + extent.right) / 2, BLOOM_SCENE.centerX)
+    assert(extent.right - extent.left <= BLOOM_COMPOSITION.bed.maxWidth)
+    samePoint(garden.king.curve[0], { x: BLOOM_SCENE.centerX, y: BLOOM_SCENE.baseline })
     assert.deepEqual(ground, groundStudyGeometry(seed, extent))
     assert.equal(ground.crestPoints[0].x, extent.left)
     assert.equal(ground.crestPoints.at(-1).x, extent.right)
@@ -91,8 +310,8 @@ test("garden soil stays a single thin strip covering every plant root", () => {
 const inRange = (value, [min, max]) => assert(value >= min - 1e-9 && value <= max + 1e-9, `${value} outside ${min}-${max}`)
 const samePoint = (a, b) => assert(Math.hypot(a.x - b.x, a.y - b.y) < 1e-8)
 const digest = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex")
-const legacyGarden = (garden) => ({ ...garden, monsteras: garden.monsteras.map((plant) => ({
-  id: plant.id, role: plant.role, root: plant.root, base: plant.placement.tipTarget, angle: plant.placement.stalkLean,
+const gardenIdentity = (garden) => ({ ...garden, monsteras: garden.monsteras.map((plant) => ({
+  id: plant.id, role: plant.role, anatomySeed: plant.anatomySeed,
   size: plant.size, stemWidth: plant.stemWidth, fullness: plant.fullness, maturity: plant.maturity,
   holeFamily: plant.holeFamily, holes: plant.holes,
 })) })
@@ -114,7 +333,6 @@ test("garden monsteras reuse approved anatomy, attach at basal notches and prese
   for (let seed = 0; seed < 32; seed++) {
     const garden = generateGarden(seed), before = structuredClone(garden)
     const prepared = prepareGardenMonsteras(seed, garden.monsteras)
-    const facings = { left: new Set(), right: new Set() }
     let outward = 0
     assert.equal(prepared.length, garden.monsteras.length)
     assert.deepEqual(prepared, structuredClone(prepared))
@@ -127,13 +345,12 @@ test("garden monsteras reuse approved anatomy, attach at basal notches and prese
       assert.equal(artwork.anatomy.cuts.length, artwork.age * 2)
       assert(!("boundaries" in artwork.materials), "Worker payload should omit diagnostic sampling data")
       assert(artwork.anatomy.holes.every((hole) => !("vertices" in hole)))
-      const facing = gardenMonsteraFacing(seed, i)
+      const facing = plant.role === "king" || plant.role === "general" ? "outward" : "inward"
       const pose = plant.pose, frame = pose.blade, project = monsteraProjection(frame)
       assert.equal(pose.facing, facing)
       assert.equal(plant.anatomySeed, artwork.seed)
       assert(!("angle" in plant) && !("base" in plant), "Ambiguous pose fields must not remain in the model")
       const side = plant.root.x < BLOOM_SCENE.centerX ? -1 : 1
-      facings[side < 0 ? "left" : "right"].add(facing)
       const direction = (project(artwork.anatomy.tip).x - frame.attachment.x) * side
       assert(facing === "outward" ? direction > 0 : direction < 0, `Seed ${seed} leaf ${i} points the wrong way`)
       if (facing === "outward") outward++
@@ -141,7 +358,7 @@ test("garden monsteras reuse approved anatomy, attach at basal notches and prese
       samePoint(pose.petiole.curve[0], plant.root)
       samePoint(pose.petiole.curve[3], frame.attachment)
       samePoint(pose.petiole.end, frame.attachment)
-      assert(project(artwork.anatomy.tip).y > frame.attachment.y)
+      assert(project(artwork.anatomy.tip).y > frame.attachment.y, "Monsteras must retain the approved hanging orientation")
       assert(pose.petiole.width > pose.petiole.tipWidth)
       for (const point of organicMonsteraBlade(artwork.seed).boundary.map(project)) {
         inRange(point.x, [0, BLOOM_SCENE.width])
@@ -150,17 +367,15 @@ test("garden monsteras reuse approved anatomy, attach at basal notches and prese
       if (artwork.markings === "plain") { plain++; assert.deepEqual(artwork.materials.paths, []) }
       if (artwork.materials.pinkPaths.length) pink++
     }
-    assert(outward >= 2 && outward <= 3, "Each cast needs inward and outward leaves")
-    assert.equal(facings.left.size, 2, "The left side must have both directions")
-    assert.equal(facings.right.size, 2, "The right side must have both directions")
-    assert.deepEqual(garden, before, "Migration must not change flowers, cast or planting zones")
+    assert.equal(outward, 2, "Anchor and counterweight sweep out; connectors and young accent sweep in")
+    assert.deepEqual(garden, before, "Preparing artwork must not move the composition")
   }
   assert(pink > 0 && plain > 0)
   const artwork = createMonsteraArtwork(7, 3, "marbled")
   assert.strictEqual(artwork, createMonsteraArtwork(7, 3, "marbled"))
 })
 
-test("garden leaf-facing plans vary by seed without changing other scene streams", () => {
+test("standalone leaf-facing defaults remain reproducible for poses without a composition plan", () => {
   const plans = new Set()
   for (let seed = 0; seed < 64; seed++) {
     const plan = Array.from({ length: 5 }, (_, i) => gardenMonsteraFacing(seed, i))
@@ -177,14 +392,15 @@ test("joint rotations keep inward and outward blades connected and unclipped acr
   const angles = new Set()
   for (let seed = 0; seed < 256; seed++) {
     const garden = generateGarden(seed)
-    garden.monsteras.forEach((plant, index) => {
+    garden.monsteras.forEach((plant) => {
       const recipe = gardenMonsteraRecipe(seed, plant)
       const blade = organicMonsteraBlade(recipe.seed)
-      const facing = gardenMonsteraFacing(seed, index)
+      const facing = plant.role === "king" || plant.role === "general" ? "outward" : "inward"
       const frame = plant.pose.blade, project = monsteraProjection(frame)
       assert.equal(plant.pose.facing, facing)
       const side = plant.root.x < BLOOM_SCENE.centerX ? -1 : 1
       const tip = project(blade.tip)
+      assert(tip.y > frame.attachment.y)
       assert(facing === "outward" ? (tip.x - frame.attachment.x) * side > 0 : (tip.x - frame.attachment.x) * side < 0)
       samePoint(project(blade.attachment), plant.pose.petiole.curve[3])
       samePoint(plant.pose.petiole.curve[0], plant.root)
@@ -196,6 +412,69 @@ test("joint rotations keep inward and outward blades connected and unclipped acr
     })
   }
   assert(angles.size > 500, "Joint lean should vary continuously, not reuse a few fixed angles")
+})
+
+test("monstera groups frame the flower crown with staggered roots and role-related sweeps", () => {
+  const plans = new Set()
+  let crownIntrusion = 0
+  for (let seed = 0; seed < 128; seed++) {
+    const garden = generateGarden(seed)
+    const anchor = garden.monsteras.find((plant) => plant.role === "king")
+    const counterweight = garden.monsteras.find((plant) => plant.role === "general")
+    const young = garden.monsteras.find((plant) => plant.role === "commoner")
+    assert((anchor.root.x - BLOOM_SCENE.centerX) * (counterweight.root.x - BLOOM_SCENE.centerX) < 0)
+    assert((anchor.root.x - BLOOM_SCENE.centerX) * (young.root.x - BLOOM_SCENE.centerX) > 0)
+    assert(young.pose.blade.attachment.y - anchor.pose.blade.attachment.y > 40,
+      "Tall anchors and short basal accents must keep a visibly staggered canopy")
+    assert(gardenMonsteraRecipe(seed, young).age <= 1, "The young accent retains the approved simple juvenile anatomy")
+    assert.equal(new Set(garden.monsteras.map((plant) => plant.root.x)).size, garden.monsteras.length)
+    assert(Math.max(...garden.monsteras.map((plant) => plant.root.x))
+      - Math.min(...garden.monsteras.map((plant) => plant.root.x)) <= 108)
+    for (const plant of garden.monsteras) {
+      const boundary = organicMonsteraBlade(plant.anatomySeed).boundary.map(monsteraProjection(plant.pose.blade))
+      for (const flower of [garden.king, ...garden.flowers].filter((flower) => ["king", "general"].includes(flower.role))) {
+        const head = flower.curve[3]
+        const clearance = boundaryClearance(head, boundary) * (pointInsidePolygon(head, boundary) ? -1 : 1)
+        crownIntrusion += Math.max(0, flower.diameter * 0.19 + 10 - clearance) ** 2
+      }
+    }
+    plans.add(digest(garden.monsteras.map((plant) => plant.pose)))
+  }
+  // Taller foliage may interleave with petals; retain an 85% improvement over the original 732,587.
+  assert(crownIntrusion < 100000, `Flower crown intrusion regressed: ${crownIntrusion}`)
+  assert.equal(plans.size, 128)
+})
+
+test("whole gardens retain readable leaves, balanced mass and a varied canopy after foreground occlusion", () => {
+  for (let seed = 0; seed < 256; seed++) {
+    const garden = generateGarden(seed)
+    const metrics = gardenCompositionMetrics(garden)
+    assert(metrics.exposed.every((fraction) => fraction >= 0.22), `Buried foliage in seed ${seed}`)
+    assert(metrics.maxOverlap <= 0.41, `Merged leaf mass in seed ${seed}`)
+    assert(Math.abs(metrics.centerX - BLOOM_SCENE.centerX) < 40, `Unbalanced scene in seed ${seed}`)
+    assert(metrics.heightSpan >= 100, `Foliage collapsed onto one shelf in seed ${seed}`)
+    const anchor = garden.monsteras.find((plant) => plant.role === "king")
+    const blade = organicMonsteraBlade(anchor.anatomySeed)
+    const scale = anchor.pose.blade.scale
+    const fullLengthScale = anchor.size * BLOOM_SCENE.monsteraAttachmentHeight
+      / BLOOM_SCENE.monsteraLength / Math.abs(blade.tip.y)
+    assert(scale.y <= fullLengthScale * 0.78 + 1e-9, "Supporting foliage must not regain its oversized focal weight")
+    assert(Math.abs(scale.x / scale.y - anchor.fullness / blade.height) < 1e-9,
+      "Composition scaling must preserve the approved flat blade proportions")
+  }
+})
+
+test("composition responds to flowers without mutating or redrawing any plant", () => {
+  const garden = generateGarden(7)
+  const flowers = [garden.king, ...garden.flowers]
+  const before = structuredClone(garden)
+  assert.deepEqual(composeGardenMonsteras(7, garden.monsteras, flowers), garden.monsteras)
+  const movedFlowers = flowers.map((plant) => ({ ...plant, curve: plant.curve.map((point) =>
+    ({ ...point, x: BLOOM_SCENE.width - point.x })) }))
+  const moved = composeGardenMonsteras(7, garden.monsteras, movedFlowers)
+  assert.notDeepEqual(moved.map((plant) => plant.pose), garden.monsteras.map((plant) => plant.pose))
+  assert.deepEqual(garden, before)
+  assert.deepEqual(gardenIdentity({ ...garden, monsteras: moved }), gardenIdentity(garden))
 })
 
 test("blade rotation belongs to the generated pose and does not rotate or move its petiole", () => {
@@ -1417,6 +1696,17 @@ test("two thousand casts obey role bounds, crown spacing, leaf budgets and hole 
   for (let seed = 0; seed < 2000; seed++) {
     const garden = generateGarden(seed)
     const plants = [garden.king, ...garden.flowers]
+    const bed = gardenGroundExtent(garden)
+    assert.equal((bed.left + bed.right) / 2, BLOOM_SCENE.centerX)
+    assert(bed.right - bed.left <= BLOOM_COMPOSITION.bed.maxWidth)
+    samePoint(garden.king.curve[0], { x: BLOOM_SCENE.centerX, y: BLOOM_SCENE.baseline })
+    for (const root of [...plants.map((plant) => plant.curve[0]), ...garden.monsteras.map((plant) => plant.root), garden.vine[0]]) {
+      assert(root.x > bed.left && root.x < bed.right)
+    }
+    const composition = gardenCompositionMetrics(garden)
+    assert(composition.exposed.every((fraction) => fraction >= 0.22), `Buried foliage in seed ${seed}`)
+    assert(composition.maxOverlap <= 0.45, `Merged foliage in seed ${seed}`)
+    assert(composition.heightSpan >= 90, `Flat foliage shelf in seed ${seed}`)
     flowerCounts.add(plants.length)
     monsteraCounts.add(garden.monsteras.length)
     inRange(plants.length, [4, 6])
@@ -1425,7 +1715,7 @@ test("two thousand casts obey role bounds, crown spacing, leaf budgets and hole 
     const tallest = garden.monsteras.find((leaf) => leaf.role === "king")
     const shortest = garden.monsteras.find((leaf) => leaf.role === "commoner")
     assert(tallest.size - shortest.size >= 105)
-    assert(shortest.placement.tipTarget.y - tallest.placement.tipTarget.y >= 54)
+    assert(shortest.pose.blade.attachment.y > tallest.pose.blade.attachment.y)
     assert.equal(plants.filter((plant) => plant.role === "king").length, 1)
     assert.equal(plants.flatMap((plant) => plant.leaves).filter((leaf) => leaf.ladybird).length, 1)
     assert.equal(new Set(plants.map((plant) => plant.id)).size, plants.length)
@@ -1437,6 +1727,7 @@ test("two thousand casts obey role bounds, crown spacing, leaf budgets and hole 
       inRange(plant.stemWidth, rules.stem)
       assert(plant.leaves.length <= (plant.role === "king" ? 4 : plant.role === "general" ? 2 : 1))
       plant.leaves.forEach((leaf, i) => {
+        assert(Math.abs(leaf.angle) <= BLOOM_COMPOSITION.leafSearch.maxAngle, "Supporting leaves must rise rather than point sideways")
         inRange(leaf.width / leaf.length, [0.4, 0.52])
         const t = (plant.role === "king" ? 0.16 : 0.22)
           + i / Math.max(1, plant.leaves.length - 1) * (plant.role === "king" ? 0.43 : 0.3)
@@ -1488,19 +1779,22 @@ test("invalid seeds and generated king sizes fail explicitly", () => {
   for (const diameter of [289, 341, NaN, Infinity]) assert.throws(() => generateGarden(1, diameter), RangeError)
 })
 
-// Digests captured against the approved pre-cleanup geometry, not recomputed fixtures.
-test("composition and extracted anatomy retain the approved seeded identity", () => {
+// Centered-bed/upright-leaf fixtures include intentional posture changes; crowns retain their original digests.
+test("centered beds reproduce seeded anatomy without moving the approved flower crowns", () => {
   const snapshots = [
-    [0, "c44931d2e804f8187620453db6fa80201bdddf9bf0058c42adef182f22123524", "a3ec565b99a03dbaf99b79cdc194a5014daf21bed254136b322c748fc3150930"],
-    [1, "0ec5f24639c6fbea80123fbfdcdc6b64de2703e2bf8bdc74491760724b9c2dca", "a478fe8e1730ae418c437c7e40630a4c53735031eb49fa2e249cf3dc6e4b69ae"],
-    [7, "a90afa178cd84efa1a34c8c0121a3f1f8f3687f82d5c3b8d77549fa4d70d1cfd", "04682110c485b7efdb6b254cec40e751006966abf58fb76800e4e28badc70878"],
-    [505, "e748d11aaaa17fc13e7dda1d423ca67bbec527e8757b7a4685f7c1cd30972fb8", "8bd2ed8576abf4330c3706f5467146ee8bfe050d33eff7ccda18a4c5c39538be"],
-    [1490, "2b7d04f5acb8782c1f876c4866bea5b83ab46b66a25059fa4a9164c3005d64ca", "fadc3e9f7bf018826636ae317a9a231f023c78154782327f6e45d059886851b3"],
-    [1985, "ab3f833de3c16c05adae07499ffc405791c2c0d119056f2943f87a27fc69ce7c", "af52794491d3e445492d86266df5604e8bc94499e35ca0e5dee0ef6091634f9a"],
+    [0, "56453cb6d4ebe5f4d9e2e81d2191ca1b8c1f3be86fb4fc65f75e866fff769c24", "1c1b5aeea7e6f5b0fa41cf0868c771c86026dba08922e3af0e9b7553c7a3d43f", "dcb760716581ecfebf02e5a0f9ea9ec282f596f2607271b9e452ffaa34d7f9d5"],
+    [1, "0bf0e33d66bc9649ed144b22c962118a74520c1fb6b179368f1218fd7caef926", "ddd44e9c086c62f7c22bde552c9cd8d2d9936784422c144f42a82afb70a17ce9", "706d89dcc5dc8fc56241b993b2421a14f7a4dd0272dedcffb404c21541f71de9"],
+    [7, "8322ae60d11e877a6fd8ca26def15092e917595dba0d96de5597e5415a6294b5", "495b723d8aa758f860524de922a1f25e5b848b4d525fa23b91db5d0673814e54", "7b267217afe6b188dba5dbe68bf5515a08f33fdcddbb99225b95485b511c56cf"],
+    [505, "a548e2a1e4ca6ba0de81b0330f407bbd032f707050b32f866196524da53be3a7", "1ed55385c6128f62a81eaffc9f52ed1714f285d62341697fd3969206c73f6356", "6be82dd7b4ed3473df53431963b195e5f3768675e040906400479e854720aa36"],
+    [1490, "99f02a4552d2ec66eb7bb1b6479fe95215d1755f46c01aa8e4ad5b6af780cc1f", "e6698ea32993f9ed576d18c8177687014cf3df1fc2be702805465cbfe428f304", "fd6999f6c9e6c594debf51d0680b8d2fd19f945558c3d4b8aef34af4c7ef45aa"],
+    [1985, "99f7aca3a3c423e9ba2e444280438826fcf124c292eb263bffe4c2f74e367252", "adabf463e9016dfdd27edfcbb79b60b33069b18bc8c7c08e9aff708a76202fc7", "363c5e68803a78ccf0afb99dea1b493ead976a031fa5443373f4f141cd3dfcd2"],
   ]
-  for (const [seed, compositionDigest, anatomyDigest] of snapshots) {
+  for (const [seed, compositionDigest, anatomyDigest, crownDigest] of snapshots) {
     const garden = generateGarden(seed)
-    assert.equal(digest(legacyGarden(garden)), compositionDigest, `Original composition changed for seed ${seed}`)
+    assert.equal(digest(gardenIdentity(garden)), compositionDigest, `Centered planting changed for seed ${seed}`)
+    assert.equal(digest([garden.king, ...garden.flowers].map((plant) => ({
+      id: plant.id, role: plant.role, head: plant.curve[3], diameter: plant.diameter, stemWidth: plant.stemWidth,
+    }))), crownDigest, `Flower crowns moved for seed ${seed}`)
     const traits = flowerTraits(seed, "king")
     const anatomy = {
       leaves: [garden.king, ...garden.flowers].flatMap((plant) => plant.leaves.map((leaf) =>
@@ -1540,7 +1834,7 @@ test("atomic grows preserve palette allocation, non-repeats and the original dra
     current = next
   }
   assert.deepEqual([...counts].sort(), [4, 5, 6])
-  assert.equal(digest({ ...current, garden: legacyGarden(current.garden) }), "73f856579fd9f24d96b6b94028628bba1c175f174e705617177b5c145d62f2e3")
+  assert.equal(digest({ ...current, garden: gardenIdentity(current.garden) }), "19e8aaabf2e3229f6fe4666059effc9e4dbda1c6060789e90807d4e41115e3b5")
 })
 
 test("ink frames and decoration streams cannot change flat botanical anatomy", () => {

@@ -12,6 +12,22 @@ Seattle explores a personal signature: a rough-drawn Space Needle cycling throug
 
 Bloom creates a seeded cast of 4-6 flowers and 4-5 monsteras. King, general, soldier and commoner roles link size, stem height/thickness and leaf maturity within bounded ranges. Planting zones, crown spacing and a foliage budget keep the composition readable. Monsteras vary in fullness, splits and paired, graduated or offset fenestrations. A personal introduction with a drawn slab-serif initial makes the page an illustrated editorial spread; Grow me a garden is its only garden control and remixes the entire cast.
 
+Generated monsteras support the flowers as an asymmetric anchor, smaller counterweight, one or two connectors and a young basal accent. The flower-aware planner protects the main crown, staggers grouped roots and balances partial leaf overlap; larger blades render behind smaller ones. This planning runs only when generating a garden, never when tending an individual plant, and preserves the approved flat-2D leaf artwork.
+
+The planner compares whole-garden arrangements and revisits earlier placements once the entire cast is present. It accounts for foreground flower/leaf occlusion, readable monstera silhouettes, pairwise overlap, visual mass and canopy height spread. Foliage uses uniform supporting-scale reductions rather than perspective distortion, and connectors can rise into the middle of the garden instead of collecting at the base.
+
+The soil bed is capped at 360 scene units and grows symmetrically from the bottom center. The main flower always roots at that center; companion roots stay inset within the compact bed without moving their crowns. Regenerating changes the plants, not the garden's base anchor.
+
+Regular leaves keep a bounded upright lean and vine leaves follow that rhythm. Monsteras retain their approved hanging orientation and inward/outward facing relationships. Leaf anatomy and standalone study poses are unchanged.
+
+The shared site canvas expands to 1360px with responsive outer gutters, while prose retains its own reading-width limit. Bloom gives its controls a wider left column, full-width 64px-tall actions and a more generous vertical rhythm, without reducing artwork or preview sizes.
+
+Randomizing a selected plant swaps its drawing immediately at the stage center, without a growth or position animation. Selection entry and dismissal still follow the plant's garden position; resizing keeps the selected stage centered without replaying that entry flight.
+
+Selected framing uses the visible sticker silhouette rather than SVG bounds inflated by clipped markings. It retains the preview zoom across swaps unless larger geometry or a viewport change needs a refit; living motion pivots around the selected silhouette's center. Monstera age and marking changes keep the same visible size.
+
+Startup shows only the Bloom loader. The garden and prose prepare in a transparent, inert container so layout can be measured, then become visible together only after artwork and both paragraphs are ready.
+
 ## Local development
 
 ```sh
@@ -29,6 +45,21 @@ npm run test:garden
 ```
 
 Use Node 22.12 or newer. The dependency-free garden tests use Node's built-in test runner and TypeScript stripping. They cover 2,000 casts, fixed anatomy snapshots, original bud sizes, non-repeating palettes and independence between scene generation and animated ink.
+
+Bloom's historical Surprise feedback is shared by the garden and inspector buttons:
+the 160ms squeeze, 2px dip and rebound, plus hover outline/text boil. Regeneration
+uses a React transition so preparing artwork does not block that feedback.
+For browser regressions, open local Bloom in Playwright and run
+`tests/bloom-interactions.mjs` through its run-code tool. The script uses the open
+page's origin and needs no extra dependencies. It exercises real pointer targets,
+all six local Surprise actions, measured button motion, rapid clicks, keyboard
+activation, unchanged neighbours, garden sway, ladybird jokes/antennae and reduced motion.
+
+Selection uses a pastel paper-cut rim with a lightly chalked edge, not a dark
+outline. It expands on hover, broadens on selection, and contracts/fades on exit.
+The silhouette mask keeps colour outside the artwork and unites overlapping
+flower petals. The browser regression also checks the complete rim lifecycle,
+unchanged artwork, pointer transparency and immediate reduced-motion states.
 
 ## Structure
 
@@ -52,7 +83,7 @@ The shared `JustifiedParagraph` component measures the actual rendered font, cac
 
 Bloom opts into a two-line drop cap: Justice fits the opening lines to a narrower measure, then returns to the full column width. Its custom initial uses the same measured exclusion, without reserving extra empty lines beneath it.
 
-Bloom opens with a compact spinning-flower title while its paragraphs prepare. Batched text measurements avoid repeated layout flushes; the garden is revealed after both paragraphs are ready and a two-second minimum.
+Bloom opens with a compact spinning-flower title while its paragraphs and artwork prepare. Batched text measurements avoid repeated layout flushes; the garden is revealed when both paragraphs and artwork are ready, without an arbitrary minimum delay.
 
 ## Garden tokens
 

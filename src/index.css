@@ -226,6 +226,7 @@
   --space-6:    1.5rem;    /* 24px */
   --space-8:    2rem;      /* 32px */
   --space-10:   2.5rem;    /* 40px */
+  --space-12:   3rem;      /* 48px */
   --space-13:   3.25rem;   /* 52px */
   --space-16:   4rem;      /* 64px */
 
@@ -235,6 +236,7 @@
 
   /* ── Content column ───────────────────────────────────────────────────────
      Horizontal and vertical padding of the scrollable content area. */
+  --content-max-width: 85rem;           /* 1360px canvas; prose stays independently capped */
   --content-px:        var(--space-6);  /* 24px horizontal padding           */
   --content-pt:        calc(var(--page-inset) + 3.5rem); /* clear the menu button: page-inset (button top) + 40px button + 16px gap → 80px mobile / 96px desktop */
   --content-pt-home:   7.5rem;          /* 120px top padding — home page     */
@@ -293,7 +295,8 @@
 @media (min-width: 1024px) {
   :root {
     --page-inset: var(--space-10);        /* 40px outer margin               */
-    --content-px: var(--page-inset);      /* match outer margin (40px)       */
+    --content-px: clamp(1.5rem, 3.5vw, 4rem);
+    --block-gap: var(--space-12);
     /* --content-pt inherits the :root calc → 96px here (clears the 40px-inset menu button) */
     --content-pt-home: 7.5rem;            /* 120px top padding — home page    */
     --content-py: 12.5rem;                /* 200px vertical padding          */

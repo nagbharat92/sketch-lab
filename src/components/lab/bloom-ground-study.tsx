@@ -12,9 +12,12 @@ function Ink({ paths, opacity }: { paths: RoughPathInfo[]; opacity: number }) {
   )
 }
 
-export function GroundStudyDrawing({ seed, extent }: { seed: number; extent?: { left: number; right: number } }) {
+export function GroundStudyDrawing({ seed, extent, geometry }: {
+  seed: number; extent?: { left: number; right: number }; geometry?: ReturnType<typeof groundStudyGeometry>
+}) {
   const id = useId().replace(/:/g, "")
-  const ground = useMemo(() => groundStudyGeometry(seed, extent), [seed, extent])
+  const computed = useMemo(() => geometry ?? groundStudyGeometry(seed, extent), [geometry, seed, extent])
+  const ground = computed
   const colors = BLOOM_PIGMENTS.ground
   // Ink is fixed per generation; the stage's displacement filter supplies the living wiggle.
   const ink = useMemo(() => {

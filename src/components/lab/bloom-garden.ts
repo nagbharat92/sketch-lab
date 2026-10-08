@@ -1,6 +1,7 @@
 import { BLOOM_COMPOSITION, BLOOM_MOTION, BLOOM_PIGMENTS, BLOOM_SCENE, GARDEN_ROLES, type GardenRole } from "./bloom-tokens.ts"
 import { branchCurve, curvePoint, sceneRandom, type Curve, type Point } from "./bloom-math.ts"
 import { createGardenMonsteraPose, gardenMonsteraAnatomySeed, type GardenMonsteraPose } from "./bloom-monstera-pose.ts"
+import { composeGardenMonsteras } from "./bloom-monstera-composition.ts"
 export { branchCurve, curvePath, curvePoint, sceneRandom } from "./bloom-math.ts"
 export type { Curve, Point } from "./bloom-math.ts"
 export { GARDEN_ROLES } from "./bloom-tokens.ts"
@@ -102,8 +103,11 @@ function makeFlower(seed: number, id: string, role: GardenRole, zone: HeadZone, 
     }
     if (clearance >= search.clearance) break
   }
+  const rootX = role === "king" ? BLOOM_SCENE.rootX + (random() - 0.5) * 34 : bestHead.x + (random() - 0.5) * 32
+  const rootHalfWidth = BLOOM_COMPOSITION.bed.maxWidth / 2 - BLOOM_COMPOSITION.bed.rootInset
   const root = {
-    x: role === "king" ? BLOOM_SCENE.rootX + (random() - 0.5) * 34 : bestHead.x + (random() - 0.5) * 32,
+    x: role === "king" ? BLOOM_SCENE.centerX : Math.max(BLOOM_SCENE.centerX - rootHalfWidth,
+      Math.min(BLOOM_SCENE.centerX + rootHalfWidth, rootX)),
     y: BLOOM_SCENE.baseline,
   }
   const height = root.y - bestHead.y
@@ -171,13 +175,14 @@ function dressFlowers(seed: number, plants: FlowerPlant[]) {
         * (main && count === 4 ? 0.9 : 1) * (i === count - 1 && count > 1 ? 0.88 : 1)
       const ratio = 0.4 + random() * 0.12
       const side = i % 2 === 0 ? -1 : 1
-      const baseAngle = side * (52 + random() * 17)
+      const baseAngle = side * interpolate(search.uprightAngle, random())
       let best: LeafPlacement = { ...node, angle: baseAngle, length, width: length * ratio, ladybird: main && i === perch }
       let bestScore = Infinity
       for (const scale of search.scales) {
         for (const turn of [...search.turns, -baseAngle * 2]) {
           const mirrored = turn === -baseAngle * 2
-          const leaf = { ...best, angle: mirrored ? -baseAngle : baseAngle + side * turn, length: length * scale, width: length * scale * ratio }
+          const angle = Math.max(-search.maxAngle, Math.min(search.maxAngle, mirrored ? -baseAngle : baseAngle + side * turn))
+          const leaf = { ...best, angle, length: length * scale, width: length * scale * ratio }
           const envelope = leafEnvelope(leaf)
           const samples = envelopeSamples(envelope)
           const otherPlants = plants.filter((other) => other.id !== plant.id)
@@ -289,7 +294,8 @@ export function generateGarden(seed: number, kingDiameter?: number): GardenScene
     const j = Math.floor(random() * (i + 1))
     ;[roles[i], roles[j]] = [roles[j], roles[i]]
   }
-  const monsteras = roles.map((role, i) => makeMonstera(seed, role, i, monsteraCount))
+  const monsteras = composeGardenMonsteras(seed,
+    roles.map((role, i) => makeMonstera(seed, role, i, monsteraCount)), [king, ...flowers])
   const vineRoot = { x: 335 + random() * 30, y: BLOOM_SCENE.baseline }
   const vineHead = { x: vineRoot.x + 10 + random() * 24, y: 427 + random() * 20 }
   const vine = branchCurve(vineRoot, vineHead)

@@ -72,12 +72,22 @@ export const BLOOM_SCENE = {
 
 export const BLOOM_COMPOSITION = {
   flowers: [4, 6], monsteras: [4, 5], kingDiameters: [306, 323, 340],
+  bed: { maxWidth: 360, rootInset: 32 },
   headSearch: { attempts: 91, randomAttempts: 64, clearance: 16, kingRadius: 0.43, companionRadius: 0.36, insetRadius: 0.1 },
   headZones: { king: [265, 305], generalLeft: [95, 175], generalRight: [365, 455], soldierLeft: [110, 275], soldierRight: [285, 430], commoner: [100, 440] },
   leafBudget: { king: 4, general: 2, other: 1, total: 11 },
-  leafSearch: { scales: [1, 0.9, 0.8, 0.65], turns: [0, 12, -12, 24, -24], samples: 12, headPadding: 8 },
+  leafSearch: { scales: [1, 0.9, 0.8, 0.65], turns: [0, 12, -12, 24, -24], samples: 12, headPadding: 8,
+    uprightAngle: [24, 36], maxAngle: 44 },
   buds: { king: [0.5, 0.7], general: [0.35, 0.5], kingSpread: 0.2, generalSpread: 0.15, nodeStart: 0.6, nodeStep: 0.13 },
   monstera: { juvenileMaturity: 0.28, maxHoles: 8, angle: 48, left: 18, right: 522 },
+  monsteraGrouping: {
+    sideOffset: 120, rootOffset: 54, rootStep: 14,
+    centers: { king: [354, 28], general: [412, 32], soldier: [480, 24], commoner: [516, 10] },
+    offsets: [-64, 0, 64], turns: [-8, 0, 8], lean: [22, 30],
+    coreRadius: 0.19, corePadding: 10,
+    scale: { king: 0.78, general: 0.84, soldier: 0.82, commoner: 0.72 },
+    beamWidth: 8, minVisible: 0.3, maxPairOverlap: 0.4,
+  },
   ground: { rocks: [4, 8], clumps: [3, 5], blades: [2, 4], marks: [3, 5], grains: [4, 7], sprigs: [3, 7] },
 } as const
 
@@ -211,6 +221,7 @@ export const BLOOM_PROSE_POLICY = { mode: "strict", tracking: 0.5, stretch: 1.5,
 export const BLOOM_SCENE_STYLE: CSSProperties & Record<`--bloom-${string}`, number | string> = {
   "--bloom-scene-width": BLOOM_SCENE.width,
   "--bloom-scene-height": BLOOM_SCENE.height,
+  "--bloom-ground-anchor": `${BLOOM_SCENE.baseline / BLOOM_SCENE.height * 100}%`,
   "--bloom-head-width": `${(BLOOM_SCENE.flowerSize / BLOOM_SCENE.width * 100).toFixed(3)}%`,
   "--bloom-plant-cycle": `${BLOOM_MOTION.cycles.plant}s`,
   "--bloom-flower-cycle": `${BLOOM_MOTION.cycles.flower}s`,

@@ -38,7 +38,7 @@ export function ProjectCanvas({ page }: ProjectCanvasProps) {
       {/* Scrollable content — full height, no clipping */}
       <div className="h-full overflow-y-auto">
         <div
-          className={`mx-auto w-full max-w-5xl px-(--content-px) pb-(--content-py-mobile) ${isBloom ? 'lg:pb-0' : 'lg:pb-(--content-py)'} ${
+          className={`project-content mx-auto w-full max-w-(--content-max-width) px-(--content-px) pb-(--content-py-mobile) ${isBloom ? 'lg:pb-0' : 'lg:pb-(--content-py)'} ${
             isHome ? 'pt-(--content-pt-home)' : isBloom ? 'pt-(--content-pt) lg:pt-0' : 'pt-(--content-pt)'
           }`}
         >

@@ -14,6 +14,7 @@ export type MonsteraPlacement = {
   fullness: number
   stemWidth: number
 }
+export type GardenMonsteraComposition = { center: Point; facing: GardenMonsteraFacing; lean: number; scale?: number }
 
 export function gardenMonsteraAnatomySeed(sceneSeed: number, id: string) {
   return studySeed(sceneSeed % 4294967296 + 1, `garden-monstera:${id}`)
@@ -58,20 +59,26 @@ export function monsteraStudyViewBox(boundary: readonly Point[], pose: MonsteraP
   return { x: (left + right - width) / 2, y: (top + bottom - height) / 2, width, height }
 }
 
-export function createGardenMonsteraPose(sceneSeed: number, index: number, plant: MonsteraPlacement, anatomySeed: number): GardenMonsteraPose {
+export function createGardenMonsteraPose(sceneSeed: number, index: number, plant: MonsteraPlacement, anatomySeed: number, composition?: GardenMonsteraComposition): GardenMonsteraPose {
   const values = [plant.root.x, plant.root.y, plant.placement.tipTarget.x, plant.placement.tipTarget.y,
     plant.placement.stalkLean, plant.size, plant.fullness, plant.stemWidth]
   if (values.some((value) => !Number.isFinite(value)) || plant.size <= 0 || plant.fullness <= 0 || plant.stemWidth <= 0) {
     throw new RangeError("Monstera placement must have finite coordinates and positive dimensions")
   }
+  if (composition && (![composition.center.x, composition.center.y, composition.lean].every(Number.isFinite)
+    || composition.lean <= 0 || composition.lean >= 90
+    || !Number.isFinite(composition.scale ?? 1) || (composition.scale ?? 1) <= 0 || (composition.scale ?? 1) > 1
+    || !["inward", "outward"].includes(composition.facing))) {
+    throw new RangeError("Monstera composition needs a finite center, facing, lean between 0 and 90, and scale above 0 through 1")
+  }
   const anatomy = organicMonsteraBlade(anatomySeed)
   const stalkRadians = plant.placement.stalkLean * Math.PI / 180
-  const attachmentHeight = plant.size * BLOOM_SCENE.monsteraAttachmentHeight / BLOOM_SCENE.monsteraLength
-  const facing = gardenMonsteraFacing(sceneSeed, index)
+  const attachmentHeight = plant.size * BLOOM_SCENE.monsteraAttachmentHeight / BLOOM_SCENE.monsteraLength * (composition?.scale ?? 1)
+  const facing = composition?.facing ?? gardenMonsteraFacing(sceneSeed, index)
   const posture = sceneRandom(anatomySeed, "garden-leaf-joint")
   posture() // Preserve the approved posture stream's first draw.
   const side = plant.root.x < BLOOM_SCENE.centerX ? -1 : 1
-  const lean = MONSTERA_GARDEN_POSE.lean[0] + posture() * (MONSTERA_GARDEN_POSE.lean[1] - MONSTERA_GARDEN_POSE.lean[0])
+  const lean = composition?.lean ?? (MONSTERA_GARDEN_POSE.lean[0] + posture() * (MONSTERA_GARDEN_POSE.lean[1] - MONSTERA_GARDEN_POSE.lean[0]))
   const lengthScale = attachmentHeight / Math.abs(anatomy.tip.y)
   const blade: MonsteraBladeFrame = {
     attachment: { x: plant.placement.tipTarget.x + Math.sin(stalkRadians) * attachmentHeight,
@@ -86,6 +93,10 @@ export function createGardenMonsteraPose(sceneSeed: number, index: number, plant
   const frame = BLOOM_COMPOSITION.monstera, inset = MONSTERA_GARDEN_POSE.verticalInset
   if (right - left > frame.right - frame.left || bottom - top > BLOOM_SCENE.baseline - inset * 2) {
     throw new RangeError("Monstera blade does not fit the garden frame")
+  }
+  if (composition) blade.attachment = {
+    x: composition.center.x - (left + right) / 2,
+    y: composition.center.y - (top + bottom) / 2,
   }
   blade.attachment = {
     x: Math.max(frame.left - left, Math.min(frame.right - right, blade.attachment.x)),

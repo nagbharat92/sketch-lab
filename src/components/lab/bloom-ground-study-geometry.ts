@@ -38,10 +38,13 @@ const pick = (random: () => number, [min, max]: readonly [number, number]) => mi
 const count = (random: () => number, [min, max]: readonly [number, number]) => min + Math.floor(random() * (max - min + 1))
 const curveD = (curve: Curve) => `M${fmt(curve[0].x)} ${fmt(curve[0].y)} C${curve.slice(1).map((p) => `${fmt(p.x)} ${fmt(p.y)}`).join(" ")}`
 
-export function groundStudyGeometry(seed: number, extent?: { left: number; right: number }) {
+export function groundStudyGeometry(seed: number, extent?: { left: number; right: number }, grass?: number) {
   if (!Number.isSafeInteger(seed) || seed < 0) throw new RangeError("Ground study seed must be a non-negative safe integer")
   if (extent && (!Number.isFinite(extent.left) || !Number.isFinite(extent.right) || extent.right - extent.left < GROUND_STUDY.right - GROUND_STUDY.left)) {
     throw new RangeError("Ground extent must be finite and at least as wide as the study strip")
+  }
+  if (grass !== undefined && (!Number.isInteger(grass) || grass < GROUND_STUDY.tufts[0] || grass > GROUND_STUDY.tufts[1])) {
+    throw new RangeError(`Grass count must be between ${GROUND_STUDY.tufts[0]} and ${GROUND_STUDY.tufts[1]}`)
   }
   const rules = { ...GROUND_STUDY, ...extent }
   const random = sceneRandom(seed, "ground-study-strip")
@@ -53,7 +56,9 @@ export function groundStudyGeometry(seed: number, extent?: { left: number; right
   const driftCount = 2 + Math.floor(random() * 2)
   const span = (hi - lo - 64) / driftCount
   const drifts = Array.from({ length: driftCount }, (_, i) => lo + 32 + span * (i + 0.5) + (random() - 0.5) * span * 0.3)
-  const target = count(random, rules.tufts)
+  // Draw the seeded count either way, so choosing a grass count does not reshuffle the soil itself.
+  const drawn = count(random, rules.tufts)
+  const target = grass ?? drawn
   const xs: number[] = []
   for (let attempt = 0; attempt < 600 && xs.length < target; attempt++) {
     const x = drifts[attempt % driftCount] + (random() - 0.5) * 56
